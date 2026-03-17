@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "./context/ProfileContext";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 
 const redirectByRole = (role, navigate) => {
   if (role === "employer") navigate("/employer/feeds", { replace: true });
@@ -13,9 +13,10 @@ const redirectByRole = (role, navigate) => {
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [error, setError]       = useState("");
+  const [success, setSuccess]   = useState("");
+  const [loading, setLoading]   = useState(false);
+
   const navigate = useNavigate();
   const { profile, loading: profileLoading, setProfile } = useProfile();
 
@@ -25,6 +26,8 @@ export default function Login() {
     if (!profile) return;
     redirectByRole(profile.userRole, navigate);
   }, [profile, profileLoading]);
+
+  const handleHome = () => navigate("/");
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -45,20 +48,25 @@ export default function Login() {
         body: JSON.stringify({ username, password }),
       });
 
+      if (res.status === 429) {
+        setError("Too many requests. Please wait a moment.");
+        return;
+      }
+
       const text = await res.text();
 
       if (res.ok) {
         setSuccess("Login successful! Redirecting…");
-        // Fetch the profile directly and redirect immediately
+
+        // FIX #1: removed duplicate if (profileRes.ok) nesting
         const profileRes = await fetch(`${API_URL}/profile`, {
           credentials: "include",
         });
+
         if (profileRes.ok) {
-        if (profileRes.ok) {
-        const data = await profileRes.json();
-        setProfile(data);                  
-        redirectByRole(data.userRole, navigate);
-      }
+          const data = await profileRes.json();
+          setProfile(data);
+          redirectByRole(data.userRole, navigate);
         } else {
           navigate("/", { replace: true });
         }
@@ -75,6 +83,13 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8">
       <div className="w-full max-w-md bg-white border border-gray-200 rounded-xl p-8">
+
+        <p
+          onClick={handleHome}
+          className="text-sm text-lightgray font-poppins hover:text-primary transition-colors inline-flex gap-1 items-center cursor-pointer mb-4"
+        >
+          <span>← Home</span>
+        </p>
 
         <p className="text-center text-xs font-mono tracking-widest text-gray-400 uppercase mb-8">
           <span className="text-gray-900 font-medium"></span> Nuto?

@@ -127,6 +127,7 @@ public class UserService {
     }
 
 
+
     private UserProfileDTO toDTO(User user) {
         UserProfileDTO.LocationDTO locationDTO = null;
         if (user.getLocation() != null) {
@@ -151,4 +152,5 @@ public class UserService {
         User user = findByUsername(username);
         return toDTO(user);
     }
+
 }

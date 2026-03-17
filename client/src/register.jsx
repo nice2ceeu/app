@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Register() {
@@ -28,6 +27,9 @@ export default function Register() {
     }));
   };
 
+  const HandleHome =()=>{
+    navigate('/')
+  }
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
@@ -69,9 +71,14 @@ export default function Register() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8">
       <div className="w-full max-w-md bg-white border border-gray-200 rounded-xl p-8">
-
+      <p
+            onClick={HandleHome}
+            className="text-sm text-lightgray font-poppins hover:text-primary transition-colors inline-flex gap-1 items-center"
+          >
+            <span> ← Home</span>
+          </p>
         <p className="text-center text-xs font-mono tracking-widest text-gray-400 uppercase mb-8">
-          <span className="text-gray-900 font-medium"></span>  user system
+          <span className="text-gray-900 font-medium"></span>  Nuto?
         </p>
 
         <h2 className="text-2xl font-medium text-gray-900 mb-1">Create account</h2>
@@ -89,7 +96,7 @@ export default function Register() {
         )}
 
         <form onSubmit={handleRegister} className="space-y-4">
-
+        
           {/* First & Last name */}
           <div className="grid grid-cols-2 gap-3">
             <div>
