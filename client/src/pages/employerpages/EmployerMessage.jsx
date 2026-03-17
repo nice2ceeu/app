@@ -1,7 +1,7 @@
 import { useProfile } from "../../context/ProfileContext";
 import Navbar from "../../components/NavBar";
 import { useEffect } from "react";
-export default function UserProfile(){
+export default function EmployerMessage(){
     
     const { profile, loading: profileLoading } = useProfile();
     useEffect(() => {
@@ -10,7 +10,7 @@ export default function UserProfile(){
 
     return(<>
      <Navbar userRole={profile.userRole}/>
-        <h1>This is User UserProfile</h1>
+        <h1>This is User EmployerMessage</h1>
     </>)
 
 }

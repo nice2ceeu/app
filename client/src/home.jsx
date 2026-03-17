@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useProfile } from "./context/ProfileContext";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./components/NavBar";
 import Footer from "./components/Footer";
@@ -29,16 +30,18 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [visible, setVisible] = useState(false);
   const navigate = useNavigate();
-
+  const { profile, loading: profileLoading } = useProfile();
+  const userRole = profile?.userRole ?? null;
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 80);
     return () => clearTimeout(t);
   }, []);
-
+  
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
 
+    
+    <div className="min-h-screen flex flex-col bg-gray-50">
+    <Navbar userRole={userRole} />
       <main className="flex-1">
         <div className="max-w-5xl mx-auto px-6">
 

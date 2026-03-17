@@ -1,7 +1,7 @@
 import { useProfile } from "../../context/ProfileContext";
 import Navbar from "../../components/NavBar";
 import { useEffect } from "react";
-export default function UserDashboard(){
+export default function UserQueue(){
     
     const { profile, loading: profileLoading } = useProfile();
     useEffect(() => {
@@ -10,7 +10,7 @@ export default function UserDashboard(){
 
     return(<>
      <Navbar userRole={profile.userRole}/>
-        <h1>This is User Dashboard</h1>
+        <h1>This is User UserQueue</h1>
     </>)
 
 }

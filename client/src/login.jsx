@@ -5,9 +5,9 @@ import { useProfile } from "./context/ProfileContext";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const redirectByRole = (role, navigate) => {
-  if (role === "employer") navigate("/employer", { replace: true });
-  else if (role === "admin") navigate("/admin", { replace: true });
-  else navigate("/user", { replace: true });
+  if (role === "employer") navigate("/employer/feeds", { replace: true });
+  else if (role === "admin") navigate("/admin/usermanagement", { replace: true });
+  else navigate("/user/queue", { replace: true });
 };
 
 export default function Login() {

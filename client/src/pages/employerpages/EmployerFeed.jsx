@@ -1,9 +1,8 @@
 import { useProfile } from "../../context/ProfileContext";
 import Navbar from "../../components/NavBar";
 import { useEffect } from "react";
-export default function EmployerDashboard(){
-
-
+export default function EmployerFeed(){
+    
     const { profile, loading: profileLoading } = useProfile();
     useEffect(() => {
         if (!profileLoading && !profile) window.location.href = "/login";
@@ -11,7 +10,7 @@ export default function EmployerDashboard(){
 
     return(<>
      <Navbar userRole={profile.userRole}/>
-        <h1>This is Employer Dashboard</h1>
+        <h1>This is User EmployerFeed</h1>
     </>)
 
 }

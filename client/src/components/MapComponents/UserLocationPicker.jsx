@@ -42,10 +42,14 @@ export default function LocationPicker({ userId, onSave, onCancel }) {
     let script = null;
 
     const initializeMap = () => {
+      
       try {
+        const defaultCenter = coords
+        ? [coords.lng, coords.lat]
+        : [120.8818, 14.3867];
         const mapInstance = new atlas.Map("locationMap", {
-          center: [120.907177, 14.444966],
-          zoom: 12,
+          center: defaultCenter,
+          zoom: coords ? 15 : 12,
           authOptions: {
             authType: "subscriptionKey",
             subscriptionKey: AZURE_MAPS_KEY,
