@@ -11,6 +11,8 @@ public class BlogPostDTO {
     private String        caption;
     private String        imagePath;
     private LocalDateTime createdAt;
+    private Long          authorId;       
+    private String        authorUsername; 
     private String        authorFirstName;
     private String        authorLastName;
 }

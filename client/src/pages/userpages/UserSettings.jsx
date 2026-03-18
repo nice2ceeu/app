@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import LocationPicker from "../../components/MapComponents/UserLocationPicker";
 import { useProfile } from "../../context/ProfileContext";
 import Navbar from "../../components/NavBar";
-
+import { useNavigate } from "react-router-dom";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Field = ({ label, name, value, onChange, type = "text", disabled = false }) => (
@@ -35,6 +35,7 @@ export default function UserSettings() {
   // Single source of truth — from context, not props
   const { profile, loading: profileLoading } = useProfile();
 
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -52,8 +53,10 @@ export default function UserSettings() {
   const [saving, setSaving] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
   const [toast, setToast] = useState(null);
+  useEffect(() => {
+      if (!profileLoading && !profile) navigate("/login");
+  }, [profile, profileLoading]);
 
-  // Populate form when profile loads
   useEffect(() => {
     if (!profile) return;
     setForm({

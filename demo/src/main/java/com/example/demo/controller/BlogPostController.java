@@ -5,6 +5,7 @@ import com.example.demo.model.BlogPost;
 import com.example.demo.repository.BlogPostRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.BlogPostService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -26,23 +28,28 @@ public class BlogPostController {
     private final UserRepository     userRepository;
     private final BlogPostService    blogPostService;
 
- 
-
     // GET /api/posts?page=0&size=10
     // GET /api/posts?authorId=1&page=0&size=10
     @GetMapping
-    public Page<BlogPostDTO> getAll(
+    public ResponseEntity<?> getAll(
             @RequestParam(required = false)    Long   authorId,
             @RequestParam(defaultValue = "0")  int    page,
-            @RequestParam(defaultValue = "10") int    size
+            @RequestParam(defaultValue = "10") int    size,
+            HttpServletRequest request
     ) {
+        String username = (String) request.getAttribute("username");
+        if (username == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        Page<BlogPost> posts = authorId != null
+        Page<BlogPostDTO> posts = (authorId != null
                 ? blogPostRepository.findByAuthorId(authorId, pageable)
-                : blogPostRepository.findAll(pageable);
+                : blogPostRepository.findAll(pageable))
+                .map(this::toDTO);
 
-        return posts.map(this::toDTO);
+        return ResponseEntity.ok(posts);
     }
 
     // POST /api/posts — create post
@@ -50,28 +57,30 @@ public class BlogPostController {
     public ResponseEntity<?> create(
             @RequestParam("caption")                            String        caption,
             @RequestParam(value = "image",    required = false) MultipartFile image,
-            @RequestParam(value = "authorId", required = false) Long          authorId
+            HttpServletRequest request
     ) throws IOException {
 
-        if (caption == null || caption.isBlank()) {
-            return ResponseEntity.badRequest().body("Caption must not be blank.");
+        String username = (String) request.getAttribute("username");
+        if (username == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         }
+
+        if (caption == null || caption.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Caption must not be blank."));
+        }
+
+        // 🔒 Resolve author from JWT username instead of trusting client-supplied authorId
+        var author = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         BlogPost post = new BlogPost();
         post.setCaption(caption);
         post.setCreatedAt(LocalDateTime.now());
         post.setUpdatedAt(LocalDateTime.now());
+        post.setAuthor(author);
 
         if (image != null && !image.isEmpty()) {
             post.setImagePath(blogPostService.saveImage(image));
-        }
-
-        if (authorId != null) {
-            var author = userRepository.findById(authorId).orElse(null);
-            if (author == null) {
-                return ResponseEntity.badRequest().body("Author not found for id: " + authorId);
-            }
-            post.setAuthor(author);
         }
 
         return ResponseEntity.ok(toDTO(blogPostRepository.save(post)));
@@ -82,13 +91,24 @@ public class BlogPostController {
     public ResponseEntity<?> update(
             @PathVariable                                    Long          id,
             @RequestParam("caption")                         String        caption,
-            @RequestParam(value = "image", required = false) MultipartFile image
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            HttpServletRequest request
     ) {
+        String username = (String) request.getAttribute("username");
+        if (username == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
         if (caption == null || caption.isBlank()) {
-            return ResponseEntity.badRequest().body("Caption must not be blank.");
+            return ResponseEntity.badRequest().body(Map.of("error", "Caption must not be blank."));
         }
 
         return blogPostRepository.findById(id).map(post -> {
+
+            if (post.getAuthor() == null || !post.getAuthor().getUsername().equals(username)) {
+                return ResponseEntity.status(403).body(Map.of("error", "Forbidden"));
+            }
+
             post.setCaption(caption);
             post.setUpdatedAt(LocalDateTime.now());
 
@@ -107,10 +127,22 @@ public class BlogPostController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    // DELETE /api/posts/{id} — delete post + image from disk
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(
+            @PathVariable Long id,
+            HttpServletRequest request
+    ) {
+        String username = (String) request.getAttribute("username");
+        if (username == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
         return blogPostRepository.findById(id).map(post -> {
+
+            if (post.getAuthor() == null || !post.getAuthor().getUsername().equals(username)) {
+                return ResponseEntity.status(403).body(Map.of("error", "Forbidden"));
+            }
+
             if (post.getImagePath() != null) {
                 blogPostService.deleteImage(post.getImagePath());
             }
@@ -119,13 +151,14 @@ public class BlogPostController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    // ── Helper: entity → DTO ──────────────────────────────────────
     private BlogPostDTO toDTO(BlogPost p) {
         return new BlogPostDTO(
                 p.getId(),
                 p.getCaption(),
                 p.getImagePath(),
                 p.getCreatedAt(),
+                p.getAuthor() != null ? p.getAuthor().getId()        : null,
+                p.getAuthor() != null ? p.getAuthor().getUsername()  : null,
                 p.getAuthor() != null ? p.getAuthor().getFirstName() : null,
                 p.getAuthor() != null ? p.getAuthor().getLastName()  : null
         );

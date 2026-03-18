@@ -70,14 +70,22 @@ public class UserService {
         return toDTO(user);
     }
 
+    public UserProfileDTO getProfile(String username) {
+        return toDTO(findByUsername(username));
+    }
+
     public String role(String username) {
         return findByUsername(username).getUserRole().name();
     }
 
+    // ── Update ───────────────────────────────────────────────
 
-    public UserProfileDTO updateProfile(Long id, UpdateProfileDTO dto) {
+    public UserProfileDTO updateProfile(Long id, UpdateProfileDTO dto, String requesterUsername) {
         User user = userRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.getUsername().equals(requesterUsername))
+            throw new RuntimeException("Forbidden");
 
         if (dto.getFirstName() != null) user.setFirstName(dto.getFirstName());
         if (dto.getLastName()  != null) user.setLastName(dto.getLastName());
@@ -88,9 +96,12 @@ public class UserService {
         return toDTO(userRepo.save(user));
     }
 
-    public void updatePassword(Long id, UpdatePasswordDTO dto) {
+    public void updatePassword(Long id, UpdatePasswordDTO dto, String requesterUsername) {
         User user = userRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.getUsername().equals(requesterUsername))
+            throw new RuntimeException("Forbidden");
 
         if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword()))
             throw new RuntimeException("Incorrect current password");
@@ -126,7 +137,7 @@ public class UserService {
         response.addCookie(cookie);
     }
 
-
+    // ── Private ──────────────────────────────────────────────
 
     private UserProfileDTO toDTO(User user) {
         UserProfileDTO.LocationDTO locationDTO = null;
@@ -148,9 +159,4 @@ public class UserService {
                 locationDTO
         );
     }
-    public UserProfileDTO getProfile(String username) {
-        User user = findByUsername(username);
-        return toDTO(user);
-    }
-
 }

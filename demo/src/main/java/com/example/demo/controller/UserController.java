@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
@@ -44,7 +45,11 @@ public class UserController {
     }
 
     @PostMapping("/signout")
-    public ResponseEntity<String> signOut(HttpServletResponse response) {
+    public ResponseEntity<String> signOut(HttpServletRequest request, HttpServletResponse response) {
+        String username = (String) request.getAttribute("username");
+        if (username == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
         userService.signOut(response);
         return ResponseEntity.ok("Signed out successfully");
     }
@@ -70,29 +75,55 @@ public class UserController {
         return ResponseEntity.ok(profile);
     }
 
-    // Update profile fields (firstName, lastName, username, address, jobTitle)
     @PutMapping("/users/{id}")
     public ResponseEntity<?> updateProfile(
             @PathVariable Long id,
-            @RequestBody UpdateProfileDTO dto) {
+            @RequestBody UpdateProfileDTO dto,
+            HttpServletRequest request) {
+
+        String username = (String) request.getAttribute("username");
+        if (username == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
         try {
-            UserProfileDTO updated = userService.updateProfile(id, dto);
+            UserProfileDTO updated = userService.updateProfile(id, dto, username);
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    // Update password
     @PutMapping("/users/{id}/password")
     public ResponseEntity<?> updatePassword(
             @PathVariable Long id,
-            @RequestBody UpdatePasswordDTO dto) {
+            @RequestBody UpdatePasswordDTO dto,
+            HttpServletRequest request) {
+
+        String username = (String) request.getAttribute("username");
+        if (username == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
         try {
-            userService.updatePassword(id, dto);
+            userService.updatePassword(id, dto, username);
             return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
+    }
+    @GetMapping("/me/token")
+    public ResponseEntity<Map<String, String>> getToken(HttpServletRequest request) {
+        String username = (String) request.getAttribute("username");
+        if (username == null) return ResponseEntity.status(401).build();
+
+        String token = Arrays.stream(request.getCookies())
+                .filter(c -> c.getName().equals("jwt"))
+                .findFirst()
+                .map(Cookie::getValue)
+                .orElse(null);
+
+        if (token == null) return ResponseEntity.status(401).build();
+        return ResponseEntity.ok(Map.of("token", token));
     }
 }
