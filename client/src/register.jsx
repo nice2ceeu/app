@@ -73,7 +73,8 @@ export default function Register() {
       <div className="w-full max-w-md bg-white border border-gray-200 rounded-xl p-8">
       <p
             onClick={HandleHome}
-            className="text-sm text-lightgray font-poppins hover:text-primary transition-colors inline-flex gap-1 items-center"
+            className="text-sm text-lightgray font-poppins hover:text-primary transition-colors inline-flex gap-1 items-center cursor-pointer mb-4"
+            
           >
             <span> ← Home</span>
           </p>
