@@ -3,32 +3,22 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useProfile } from "../context/ProfileContext";
 const API_URL = import.meta.env.VITE_API_URL;
 
-
 const ROLE_LINKS = {
-
-  // USER — job seeker links
   user: [
     { label: "Queue", path: "/user/queue" },
     { label: "Messages", path: "/user/message" },
     { label: "Feeds", path: "/user/feeds" },
     { label: "My profile", path: "/user/myprofile" },
     { label: "Settings", path: "/user/settings" },
-
-
   ],
-
   employer: [
     { label: "Feeds", path: "/employer/feeds" },
     { label: "Laborer Finder", path: "/employer/find" },
     { label: "Messages", path: "/employer/message" },
     { label: "Settings", path: "/employer/settings" },
   ],
-
-  // ADMIN — platform management links
   admin: [
     { label: "Manage User", path: "/admin/usermanagement" },
-    
-
   ],
 };
 
@@ -38,7 +28,6 @@ export default function Navbar({ userRole }) {
   const { setProfile } = useProfile();
 
   const normalizedRole = userRole?.toLowerCase();
-  // const dashboard = normalizedRole ? ROLE_DASHBOARD[normalizedRole] : undefined;
   const extraLinks = normalizedRole ? (ROLE_LINKS[normalizedRole] ?? []) : [];
 
   const handleSignOut = async () => {
@@ -63,38 +52,25 @@ export default function Navbar({ userRole }) {
 
         {/* Brand */}
         {userRole !== "admin" ? (
-            <NavLink
-              to="/"
-              className="font-mono text-sm font-medium tracking-wider text-gray-900 no-underline flex items-center gap-1 shrink-0"
-            >
-              <span>Nuto</span>
-            </NavLink>
-          ): (
-            <h4
-              className="font-mono text-sm font-medium tracking-wider text-gray-900 no-underline flex items-center gap-1 shrink-0"
-            >
-              <span>Nuto</span>
-            </h4>
-          )}
+          <NavLink
+            to="/"
+            className="font-mono text-sm font-medium tracking-wider text-gray-900 no-underline flex items-center gap-1 shrink-0"
+          >
+            <span>Nuto</span>
+          </NavLink>
+        ) : (
+          <h4 className="font-mono text-sm font-medium tracking-wider text-gray-900 no-underline flex items-center gap-1 shrink-0">
+            <span>Nuto</span>
+          </h4>
+        )}
 
         {/* Desktop links */}
         <div className="hidden sm:flex items-center gap-1 flex-1">
-
-          {/* Dashboard link — shown for all logged-in roles */}
-          {/* {dashboard && (
-            <NavLink to={dashboard.path} className={linkClass}>
-              {dashboard.label}
-            </NavLink>
-          )} */}
-
-          {/* Role-specific links — see ROLE_LINKS above to add more */}
           {extraLinks.map((link) => (
             <NavLink key={link.path} to={link.path} className={linkClass}>
               {link.label}
             </NavLink>
           ))}
-
-          {/* Guest links — only shown when not logged in */}
           {!userRole && (
             <>
               <NavLink to="/login" className={linkClass}>Login</NavLink>
@@ -135,19 +111,6 @@ export default function Navbar({ userRole }) {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="sm:hidden flex flex-col border-t border-gray-200 px-5 pt-2 pb-4 gap-1">
-
-          {/* Dashboard — all roles */}
-          {dashboard && (
-            <NavLink
-              to={dashboard.path}
-              className="text-sm text-gray-700 px-2.5 py-2 rounded-md hover:bg-gray-50 no-underline"
-              onClick={() => setMenuOpen(false)}
-            >
-              {dashboard.label}
-            </NavLink>
-          )}
-
-          {/* Role-specific links */}
           {extraLinks.map((link) => (
             <NavLink
               key={link.path}
@@ -158,8 +121,6 @@ export default function Navbar({ userRole }) {
               {link.label}
             </NavLink>
           ))}
-
-          {/* Guest links */}
           {!userRole && (
             <>
               <NavLink
@@ -178,8 +139,6 @@ export default function Navbar({ userRole }) {
               </NavLink>
             </>
           )}
-
-          {/* Sign out — all roles */}
           {userRole && (
             <button
               onClick={handleSignOut}
