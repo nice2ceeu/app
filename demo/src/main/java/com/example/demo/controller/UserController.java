@@ -25,18 +25,15 @@ public class UserController {
 
     // ── Auth ─────────────────────────────────────────────────
 
-    @RateLimit(requests = 3, durationSeconds = 30)
+   @RateLimit(requests = 3, durationSeconds = 30)
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody User user, HttpServletResponse response) {
         try {
             String token = userService.login(user.getUsername(), user.getPassword());
 
-            Cookie cookie = new Cookie("jwt", token);
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true);   // set to true in production
-            cookie.setPath("/");
-            cookie.setMaxAge(60 * 60); // 1 hour
-            response.addCookie(cookie);
+            // SameSite=None required for cross-site cookies (Vercel → Render)
+            response.addHeader("Set-Cookie",
+                "jwt=" + token + "; HttpOnly; Secure; Path=/; Max-Age=3600; SameSite=None");
 
             return ResponseEntity.ok("Login successful");
         } catch (IllegalArgumentException e) {

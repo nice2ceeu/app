@@ -132,11 +132,8 @@ public class UserService {
     }
 
     public void signOut(HttpServletResponse response) {
-        Cookie cookie = new Cookie("jwt", null);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
+    response.addHeader("Set-Cookie",
+        "jwt=; HttpOnly; Secure; Path=/; Max-Age=0; SameSite=None");
     }
 
     // ── Private ──────────────────────────────────────────────
