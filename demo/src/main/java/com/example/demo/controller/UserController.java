@@ -10,11 +10,14 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Arrays;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import java.time.Duration;
 import java.util.Map;
 
-import org.springframework.http.ResponseEntity;
+import java.util.Arrays;
+
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,19 +29,21 @@ public class UserController {
     // ── Auth ─────────────────────────────────────────────────
 
    @RateLimit(requests = 3, durationSeconds = 30)
-    @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User user, HttpServletResponse response) {
-        try {
-            String token = userService.login(user.getUsername(), user.getPassword());
+   @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> body, HttpServletResponse response) {
+        String token = userService.login(body.get("username"), body.get("password"));
 
-            // SameSite=None required for cross-site cookies (Vercel → Render)
-            response.addHeader("Set-Cookie",
-                "jwt=" + token + "; HttpOnly; Secure; Path=/; Max-Age=3600; SameSite=None");
+        ResponseCookie cookie = ResponseCookie.from("jwt", token)
+            .httpOnly(true)
+            .secure(true)
+            .path("/")
+            .maxAge(Duration.ofHours(1))
+            .sameSite("None")
+            .build();
 
-            return ResponseEntity.ok("Login successful");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(401).body(e.getMessage());
-        }
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        return ResponseEntity.ok(Map.of("message", "Login successful"));
     }
 
     @PostMapping("/signout")

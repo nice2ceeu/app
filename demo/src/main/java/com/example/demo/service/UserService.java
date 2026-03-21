@@ -7,7 +7,6 @@ import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.util.JwtUtil;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,15 +35,15 @@ public class UserService {
         String address   = user.getAddress();
 
         if (firstName == null || firstName.length() <= 3)
-            throw new IllegalArgumentException("First name must be longer than 3 characters");
+            throw new IllegalArgumentException("First name must be longer than 4 characters");
         if (lastName == null || lastName.length() <= 2)
             throw new IllegalArgumentException("Last name must be longer than 2 characters");
         if (username == null || username.length() < 6)
             throw new IllegalArgumentException("Username must be at least 6 characters");
         if (password == null || password.length() <= 8)
-            throw new IllegalArgumentException("Password must be longer than 8 characters");
+            throw new IllegalArgumentException("Password must be longer than 9 characters");
         if (address == null || address.length() <= 8)
-            throw new IllegalArgumentException("Address must be longer than 8 characters");
+            throw new IllegalArgumentException("Address must be longer than 9 characters");
 
         if (userRepo.findByUsername(username).isPresent())
             throw new IllegalArgumentException("Username already exists. Please choose a different name.");
