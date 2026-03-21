@@ -7,7 +7,7 @@ export default function LocationPicker({ userId, onSave, onCancel }) {
   const mapRef = useRef(null);
   const [map, setMap] = useState(null);
   const [coords, setCoords] = useState(null);
-  const [isExisting, setIsExisting] = useState(false); // true if user already has a saved location
+  const [isExisting, setIsExisting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
@@ -22,7 +22,7 @@ export default function LocationPicker({ userId, onSave, onCancel }) {
         const res = await fetch(`${API_URL}/user-location/${userId}`, {
           credentials: "include",
         });
-        if (res.status === 404) return; // no location set yet — that's fine
+        if (res.status === 404) return;
         if (!res.ok) throw new Error("Failed to fetch location.");
         const data = await res.json();
         if (data?.latitude && data?.longitude) {
@@ -30,7 +30,6 @@ export default function LocationPicker({ userId, onSave, onCancel }) {
           setIsExisting(true);
         }
       } catch (err) {
-        // silently fail — not critical
         console.warn("Could not fetch existing location:", err.message);
       }
     };
@@ -42,11 +41,10 @@ export default function LocationPicker({ userId, onSave, onCancel }) {
     let script = null;
 
     const initializeMap = () => {
-      
       try {
         const defaultCenter = coords
-        ? [coords.lng, coords.lat]
-        : [120.8818, 14.3867];
+          ? [coords.lng, coords.lat]
+          : [120.8818, 14.3867];
         const mapInstance = new atlas.Map("locationMap", {
           center: defaultCenter,
           zoom: coords ? 15 : 12,
@@ -67,7 +65,7 @@ export default function LocationPicker({ userId, onSave, onCancel }) {
           mapInstance.events.add("click", (e) => {
             if (!e.position) return;
             setCoords({ lat: e.position[1], lng: e.position[0] });
-            setIsExisting(false); // user is overriding the existing pin
+            setIsExisting(false);
           });
         });
 
@@ -131,7 +129,7 @@ export default function LocationPicker({ userId, onSave, onCancel }) {
 
     map.setCamera({
       center: [coords.lng, coords.lat],
-      zoom: 16,
+      zoom: 14,
       type: "ease",
       duration: 800,
     });
@@ -206,7 +204,6 @@ export default function LocationPicker({ userId, onSave, onCancel }) {
               Search an address or click on the map to drop a pin
             </p>
           </div>
-          {/* Badge showing if location is already set */}
           {isExisting && (
             <span className="font-mono text-[10px] tracking-widest uppercase bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-1 rounded">
               Already set
@@ -238,25 +235,19 @@ export default function LocationPicker({ userId, onSave, onCancel }) {
         )}
 
         {/* Map */}
-        <div className="h-72 w-full" id="locationMap" />
-
-        {/* Coords display */}
-        <div className="px-5 py-3 border-t border-gray-100 bg-gray-50 font-mono text-xs text-gray-400 min-h-9">
-          {coords ? (
-            <span>
-              Lat: <span className="text-gray-700">{coords.lat.toFixed(6)}</span>
-              &nbsp;&nbsp;Lng: <span className="text-gray-700">{coords.lng.toFixed(6)}</span>
-              {isExisting && (
-                <span className="ml-3 text-emerald-500">← current saved location</span>
-              )}
-            </span>
-          ) : (
-            <span>No pin dropped yet</span>
-          )}
+        <div className="relative h-72 w-full overflow-hidden">
+          <div className="h-72 w-full" id="locationMap" />
+          <style>{`
+            #locationMap + div,
+            #locationMap ~ div:not([class]),
+            .azure-maps-attribution {
+              display: none !important;
+            }
+          `}</style>
         </div>
 
         {error && (
-          <p className="px-5 text-xs text-red-500">{error}</p>
+          <p className="px-5 py-2 text-xs text-red-500">{error}</p>
         )}
 
         {/* Actions */}

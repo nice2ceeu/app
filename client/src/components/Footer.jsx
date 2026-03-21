@@ -34,7 +34,7 @@ export default function Footer() {
               to="/"
               className="font-mono text-sm font-medium tracking-widest text-neutral-100 no-underline flex items-center gap-1"
             >
-              <span>Nutp</span>
+              <span>Nuto</span>
               <span className="text-neutral-600 mx-0.5">/</span>
               <span>app</span>
             </NavLink>

@@ -40,7 +40,7 @@ export default function LaborFinder() {
       try {
         const mapInstance = new atlas.Map("finderMap", {
           center: [120.8818, 14.3867],
-          zoom: 12,
+          zoom: 13,
           authOptions: {
             authType: "subscriptionKey",
             subscriptionKey: AZURE_MAPS_KEY,
