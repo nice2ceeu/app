@@ -33,7 +33,7 @@ public class UserController {
 
             Cookie cookie = new Cookie("jwt", token);
             cookie.setHttpOnly(true);
-            cookie.setSecure(false);   // set to true in production
+            cookie.setSecure(true);   // set to true in production
             cookie.setPath("/");
             cookie.setMaxAge(60 * 60); // 1 hour
             response.addCookie(cookie);
