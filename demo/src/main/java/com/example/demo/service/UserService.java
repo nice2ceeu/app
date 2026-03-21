@@ -48,8 +48,10 @@ public class UserService {
 
         if (userRepo.findByUsername(username).isPresent())
             throw new IllegalArgumentException("Username already exists. Please choose a different name.");
-
+        
         user.setPassword(passwordEncoder.encode(password));
+        user.setVerified(false); 
+        user.setVisible(false);
         return userRepo.save(user);
     }
 
