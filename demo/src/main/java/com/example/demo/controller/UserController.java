@@ -28,8 +28,9 @@ public class UserController {
 
     // ── Auth ─────────────────────────────────────────────────
 
-   @RateLimit(requests = 3, durationSeconds = 30)
-   @PostMapping("/login")
+    // Already set — brute-force protection
+    @RateLimit(requests = 3, durationSeconds = 30)
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body, HttpServletResponse response) {
         String token = userService.login(body.get("username"), body.get("password"));
 
@@ -46,6 +47,8 @@ public class UserController {
         return ResponseEntity.ok(Map.of("message", "Login successful"));
     }
 
+    // Signout is a one-shot action — low cap, no legitimate need to call this rapidly
+    @RateLimit(requests = 5, durationSeconds = 60)
     @PostMapping("/signout")
     public ResponseEntity<String> signOut(HttpServletRequest request, HttpServletResponse response) {
         String username = (String) request.getAttribute("username");
@@ -58,6 +61,8 @@ public class UserController {
 
     // ── User ─────────────────────────────────────────────────
 
+    // Registration — tight cap to prevent account farming
+    @RateLimit(requests = 3, durationSeconds = 60)
     @PostMapping("/create")
     public ResponseEntity<?> createUser(@RequestBody User user) {
         try {
@@ -67,6 +72,8 @@ public class UserController {
         }
     }
 
+    // Profile fetch — cheap read, called on page load; relaxed but bounded
+    @RateLimit(requests = 30, durationSeconds = 60)
     @GetMapping("/profile")
     public ResponseEntity<?> profile(HttpServletRequest request) {
         String username = (String) request.getAttribute("username");
@@ -77,6 +84,8 @@ public class UserController {
         return ResponseEntity.ok(profile);
     }
 
+    // Profile update — low cap, users rarely update profile info repeatedly
+    @RateLimit(requests = 5, durationSeconds = 60)
     @PutMapping("/users/{id}")
     public ResponseEntity<?> updateProfile(
             @PathVariable Long id,
@@ -96,6 +105,8 @@ public class UserController {
         }
     }
 
+    // Password change — very strict; sensitive action, should almost never repeat
+    @RateLimit(requests = 3, durationSeconds = 60)
     @PutMapping("/users/{id}/password")
     public ResponseEntity<?> updatePassword(
             @PathVariable Long id,
@@ -114,6 +125,9 @@ public class UserController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    // Token fetch — called by frontend on init; moderate cap to allow normal app use
+    @RateLimit(requests = 20, durationSeconds = 60)
     @GetMapping("/me/token")
     public ResponseEntity<Map<String, String>> getToken(HttpServletRequest request) {
         String username = (String) request.getAttribute("username");

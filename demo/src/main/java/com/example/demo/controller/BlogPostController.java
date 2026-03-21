@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.BlogPostDTO;
 import com.example.demo.model.BlogPost;
+import com.example.demo.ratelimiter.RateLimit;
 import com.example.demo.repository.BlogPostRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.BlogPostService;
@@ -28,8 +29,8 @@ public class BlogPostController {
     private final UserRepository     userRepository;
     private final BlogPostService    blogPostService;
 
-    // GET /api/posts?page=0&size=10
-    // GET /api/posts?authorId=1&page=0&size=10
+    // Feed/profile browsing — relaxed, paginated reads are cheap
+    @RateLimit(requests = 30, durationSeconds = 60)
     @GetMapping
     public ResponseEntity<?> getAll(
             @RequestParam(required = false)    Long   authorId,
@@ -52,7 +53,8 @@ public class BlogPostController {
         return ResponseEntity.ok(posts);
     }
 
-    // POST /api/posts — create post
+    // Post creation involves image upload + DB write — moderate cap to prevent spam
+    @RateLimit(requests = 10, durationSeconds = 60)
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<?> create(
             @RequestParam("caption")                            String        caption,
@@ -69,7 +71,6 @@ public class BlogPostController {
             return ResponseEntity.badRequest().body(Map.of("error", "Caption must not be blank."));
         }
 
-        // 🔒 Resolve author from JWT username instead of trusting client-supplied authorId
         var author = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -86,7 +87,8 @@ public class BlogPostController {
         return ResponseEntity.ok(toDTO(blogPostRepository.save(post)));
     }
 
-    // PUT /api/posts/{id} — update post
+    // Edit involves potential image replacement (disk I/O) — same cap as create
+    @RateLimit(requests = 10, durationSeconds = 60)
     @PutMapping(value = "/{id}", consumes = "multipart/form-data")
     public ResponseEntity<?> update(
             @PathVariable                                    Long          id,
@@ -127,6 +129,8 @@ public class BlogPostController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    // Deletes also clean up disk images — moderate cap, no reason to bulk-delete rapidly
+    @RateLimit(requests = 10, durationSeconds = 60)
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(
             @PathVariable Long id,

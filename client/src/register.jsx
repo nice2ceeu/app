@@ -57,7 +57,7 @@ export default function Register() {
         setTimeout(() => navigate("/login"), 1500);
       } else {
         const text = await res.text();
-        setError(text || "Registration failed.");
+        setError("Registration failed.");
       }
     } catch {
       setError("Could not reach the server.");

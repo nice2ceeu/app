@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.ratelimiter.RateLimit;
 import com.example.demo.service.UserQueueService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,8 @@ public class UserQueueController {
 
     private final UserQueueService userQueueService;
 
+    // Status toggle — very low limit, this should rarely be triggered rapidly
+    @RateLimit(requests = 5, durationSeconds = 60)
     @PostMapping("users/ready")
     public ResponseEntity<?> setReadyForNearbyWork(HttpServletRequest request) {
         String username = (String) request.getAttribute("username");
@@ -29,6 +32,9 @@ public class UserQueueController {
             return ResponseEntity.status(404).body(Map.of("error", ex.getMessage()));
         }
     }
+
+    // Status toggle — same reasoning as above
+    @RateLimit(requests = 5, durationSeconds = 60)
     @PostMapping("/users/ready/cancel")
     public ResponseEntity<?> cancelReadyForNearbyWork(HttpServletRequest request) {
         String username = (String) request.getAttribute("username");
@@ -42,6 +48,9 @@ public class UserQueueController {
             return ResponseEntity.status(404).body(Map.of("error", ex.getMessage()));
         }
     }
+
+    // Visibility check — lightweight read, higher tolerance
+    @RateLimit(requests = 20, durationSeconds = 60)
     @GetMapping("/users/visibility")
     public ResponseEntity<?> getVisibility(HttpServletRequest request) {
         String username = (String) request.getAttribute("username");

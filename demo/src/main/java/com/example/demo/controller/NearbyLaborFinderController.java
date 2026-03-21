@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.NearbyLaborDTO;
+import com.example.demo.ratelimiter.RateLimit;
 import com.example.demo.service.NearbyLaborService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,9 @@ import java.util.Map;
 public class NearbyLaborFinderController {
 
     private final NearbyLaborService nearbyLaborService;
+
+    // Geo-search is expensive — strict limit to prevent DB/query abuse
+    @RateLimit(requests = 10, durationSeconds = 60)
     @GetMapping("/employer/nearby-labors")
     public ResponseEntity<?> getNearbyLabor(
             HttpServletRequest request,

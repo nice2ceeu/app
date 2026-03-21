@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -14,15 +13,16 @@ export default function Inbox({ currentUser, onSelectConversation }) {
 
   const fetchInbox = async () => {
     try {
-      const res = await axios.get(`${API_URL}/inbox`, { withCredentials: true });
-      setConversations(res.data);
+      const res = await fetch(`${API_URL}/inbox`, { credentials: "include" });
+      if (!res.ok) return;
+      const data = await res.json();
+      setConversations(data);
     } catch (err) {
       console.error("Failed to fetch inbox", err);
     } finally {
       setLoading(false);
     }
   };
-
   const handleSelect = (convo) => {
     setSelected(convo.username);
     onSelectConversation(convo.username);

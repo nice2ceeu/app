@@ -71,7 +71,7 @@ export default function Login() {
           navigate("/", { replace: true });
         }
       } else {
-        setError(text || "Invalid credentials.");
+        setError("Invalid credentials.");
       }
     } catch {
       setError("Could not reach the server.");
