@@ -9,6 +9,7 @@ const ROLE_LINKS = {
     { label: "Messages", path: "/user/message" },
     { label: "Feeds", path: "/user/feeds" },
     { label: "My profile", path: "/user/myprofile" },
+    { label: "Top Up", path: "/user/topup" },
     { label: "Settings", path: "/user/settings" },
   ],
   employer: [
@@ -19,6 +20,8 @@ const ROLE_LINKS = {
   ],
   admin: [
     { label: "Manage User", path: "/admin/usermanagement" },
+    { label: "Manage Token", path: "/admin/tokens" },
+
   ],
 };
 
