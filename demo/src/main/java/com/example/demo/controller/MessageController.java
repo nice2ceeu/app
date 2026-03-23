@@ -25,14 +25,14 @@ public class MessageController {
  
     // 🔌 WebSocket: Send Message
     // Moderate throttle — prevent spam but allow active conversations
-    @RateLimit(requests = 30, durationSeconds = 60)
+    // @RateLimit(requests = 30, durationSeconds = 60)
     @MessageMapping("/chat")
     public void sendMessage(ChatMessageRequest request, Principal principal) {
         messageService.sendMessage(request, principal.getName());
     }
  
     // Paginated read — relaxed limit, still guards against scraping
-    @RateLimit(requests = 30, durationSeconds = 60)
+    // @RateLimit(requests = 30, durationSeconds = 60)
     @GetMapping("/messages/{user1}/{user2}")
     @ResponseBody
     public ResponseEntity<?> getConversation(
@@ -56,7 +56,7 @@ public class MessageController {
     }
  
     // Inbox polling — tighter cap to prevent aggressive polling loops
-    @RateLimit(requests = 10, durationSeconds = 60)
+    // @RateLimit(requests = 10, durationSeconds = 60)
     @GetMapping("/inbox")
     @ResponseBody
     public ResponseEntity<?> getInbox(HttpServletRequest request) {

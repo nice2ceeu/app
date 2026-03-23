@@ -16,6 +16,7 @@ const ROLE_LINKS = {
     { label: "Feeds", path: "/employer/feeds" },
     { label: "Laborer Finder", path: "/employer/find" },
     { label: "Messages", path: "/employer/message" },
+    { label: "Top Up", path: "/employer/topup" },
     { label: "Settings", path: "/employer/settings" },
   ],
   admin: [

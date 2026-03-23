@@ -99,7 +99,7 @@ export default function LaborFinder() {
     // Radius circle
     const radiusPoints = atlas.math.getRegularPolygonPath(
       [employerCoords.lng, employerCoords.lat],
-      3500, 360, "meters"
+      512, 360, "meters"
     );
     const radiusSource = new atlas.source.DataSource("radiusSource");
     map.sources.add(radiusSource);
