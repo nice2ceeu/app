@@ -48,7 +48,7 @@ export default function TopUp() {
     setLoading(true);
     try {
       // Backend creates the PayMongo checkout session and returns checkout_url
-      const res = await fetch(`${API_URL}/tokens/checkout`, {
+      const res = await fetch(`${API_URL}/api/tokens/checkout`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

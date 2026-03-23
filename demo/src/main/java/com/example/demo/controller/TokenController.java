@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/tokens")
+@RequestMapping("/api/tokens")
 @RequiredArgsConstructor
 public class TokenController {
 
@@ -41,9 +41,9 @@ public class TokenController {
                 PageRequest.of(page, size, Sort.by("createdAt").descending())));
     }
 
-    @GetMapping("/confirm")
-    public ResponseEntity<TokenDTO.TransactionResponse> confirmPayment(
-            @RequestParam("session_id") String sessionId) {
-        return ResponseEntity.ok(tokenService.confirmBySessionId(sessionId));
-    }
+    // @GetMapping("/confirm")
+    // public ResponseEntity<TokenDTO.TransactionResponse> confirmPayment(
+    //         @RequestParam("session_id") String sessionId) {
+    //     return ResponseEntity.ok(tokenService.confirmBySessionId(sessionId));
+    // }
 }
