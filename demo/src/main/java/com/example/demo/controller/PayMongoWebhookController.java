@@ -4,7 +4,14 @@ import com.example.demo.service.TokenService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.HexFormat;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,19 +21,24 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class PayMongoWebhookController {
 
+    @Value("${paymongo.webhook-secret}")
+    private String webhookSecret;
+    
     private final TokenService tokenService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // ── POST /api/webhooks/paymongo ───────────────────────────────────────────
-    // Register this URL in your PayMongo dashboard under Webhooks.
-    // PayMongo will POST here when a payment is completed.
-    //
-    // Event type: checkout_session.payment.paid
-    // PayMongo docs: https://developers.paymongo.com/docs/webhooks
     @PostMapping("/paymongo")
-    public ResponseEntity<Void> handleWebhook(@RequestBody String payload) {
+    public ResponseEntity<Void> handleWebhook(
+        @RequestHeader("Paymongo-Signature") String signature,
+        @RequestBody String payload) {
         try {
             JsonNode root = objectMapper.readTree(payload);
+
+
+            if (!isValidSignature(signature, payload, webhookSecret)) {
+                log.warn("Invalid PayMongo webhook signature");
+                return ResponseEntity.status(401).build();
+            }
 
             // PayMongo sends: { "data": { "attributes": { "type": "...", "data": { ... } } } }
             String eventType = root
@@ -60,4 +72,27 @@ public class PayMongoWebhookController {
             return ResponseEntity.ok().build();
         }
     }
+
+    private boolean isValidSignature(String signature, String payload, String secret) {
+    try {
+        String[] parts = signature.split(",");
+        String timestamp = parts[0].substring(2); // remove "t="
+        String receivedHash = parts[1].substring(3); // remove "te="
+
+        // Reconstruct the signed payload
+        String signedPayload = timestamp + "." + payload;
+
+        // HMAC-SHA256
+        Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(new SecretKeySpec(secret.getBytes(), "HmacSHA256"));
+        String computedHash = HexFormat.of()
+            .formatHex(mac.doFinal(signedPayload.getBytes()));
+
+        return computedHash.equals(receivedHash);
+
+    } catch (Exception e) {
+        log.error("Signature verification failed: {}", e.getMessage());
+        return false;
+    }
+}
 }
