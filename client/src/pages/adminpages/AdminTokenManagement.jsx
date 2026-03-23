@@ -52,7 +52,7 @@ export default function AdminTokenManagement() {
     setTxLoading(true);
     try {
       const res = await fetch(
-        `${API_URL}/admin/tokens/transactions?page=${page}&size=10`,
+        `${API_URL}/api/admin/tokens/transactions?page=${page}&size=10`,
         { credentials: "include" }
       );
       const data = await res.json();

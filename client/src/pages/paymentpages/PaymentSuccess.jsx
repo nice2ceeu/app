@@ -55,15 +55,17 @@ export default function PaymentSuccess() {
   if (profileLoading || status === "verifying") {
     return (
       <>
-        {profile && <Navbar userRole={profile?.userRole} />}
+        <Navbar userRole={profile?.userRole} />
         <div className="max-w-3xl mx-auto px-6 py-10">
-          <div className="border border-gray-100 rounded-xl px-6 py-16 bg-gray-50 flex flex-col items-center gap-4">
-            {/* Animated spinner */}
-            <div className="w-8 h-8 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
-            <p className="font-mono text-xs text-gray-400 tracking-widest uppercase animate-pulse">
-              Verifying payment…
-            </p>
-          </div>
+          <p className="font-mono text-[10px] tracking-widest uppercase text-gray-400 mb-2">Wallet</p>
+          <h1 className="text-2xl font-light tracking-tight text-gray-900">Payment Received</h1>
+          <p className="text-sm text-gray-400 mt-2">
+            Your tokens will be credited shortly. You may close this page.
+          </p>
+          <button onClick={() => navigate(profile?.userRole === "employer" ? "/employer/find" : "/user/queue")}
+            className="mt-6 font-mono text-xs tracking-wider text-white bg-gray-900 px-5 py-2.5 rounded-lg">
+            Continue →
+          </button>
         </div>
       </>
     );
