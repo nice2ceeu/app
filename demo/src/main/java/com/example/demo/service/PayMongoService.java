@@ -90,10 +90,6 @@ public class PayMongoService {
         }
     }
 
-    /**
-     * Fetches a checkout session by ID to verify its payment status.
-     * Used when PayMongo calls our webhook or when user returns to success_url.
-     */
     public JsonNode getCheckoutSession(String sessionId) {
         try {
             Request request = new Request.Builder()

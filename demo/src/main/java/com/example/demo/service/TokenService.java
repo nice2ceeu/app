@@ -75,27 +75,15 @@ public class TokenService {
             return; // idempotent — safe to call twice
         }
 
-        // Verify with PayMongo before crediting
-        JsonNode session = payMongoService.getCheckoutSession(sessionId);
-        String paymentStatus = session
-                .path("data").path("attributes").path("payment_status").asText();
-
-        if (!"paid".equalsIgnoreCase(paymentStatus)) {
-            log.warn("Webhook received but payment_status is '{}' for session {}", paymentStatus, sessionId);
-            tx.setStatus(TransactionStatus.FAILED);
-            transactionRepository.save(tx);
-            return;
-        }
-
         // Credit tokens to wallet
         creditWallet(tx);
 
         tx.setStatus(TransactionStatus.PAID);
         tx.setPaidAt(LocalDateTime.now());
         transactionRepository.save(tx);
-
+        
         log.info("Tokens credited: {} tokens to user {} (session {})",
-                tx.getTokensAdded(), tx.getUser().getId(), sessionId);
+        tx.getTokensAdded(), tx.getUser().getId(), sessionId);
     }
 
     // ── 3. Called from success_url page to confirm payment ────────────────────
