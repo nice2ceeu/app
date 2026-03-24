@@ -1,9 +1,12 @@
 package com.example.demo.service;
-
+import com.example.demo.model.User;
 import com.example.demo.dto.NearbyLaborDTO;
+import com.example.demo.model.TokenWallet;
 import com.example.demo.model.UserLocation;
 import com.example.demo.repository.NearbyLaborRepository;
+import com.example.demo.repository.TokenWalletRepository;
 import com.example.demo.repository.UserLocationRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,16 +15,29 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class NearbyLaborService {
-
     private final NearbyLaborRepository nearbyLaborRepository;
     private final UserLocationRepository userLocationRepository;
-
+    private final TokenWalletRepository walletRepository;
     public List<NearbyLaborDTO> getNearbyLabor(String employerUsername, String jobTitle) {
+
         UserLocation employerLocation = userLocationRepository.findByUserUsername(employerUsername)
                 .orElseThrow(() -> new IllegalStateException("Your location is not set."));
-
+    
+        User user = employerLocation.getUser();
+    
+        if (!Boolean.TRUE.equals(user.getVerified())) {
+            throw new IllegalStateException("Account is not verified.");
+        }
+    
         if (employerLocation.getLatitude() == null || employerLocation.getLongitude() == null) {
             throw new IllegalStateException("Your location coordinates are incomplete.");
+        }
+    
+        TokenWallet wallet = walletRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new IllegalStateException("Wallet not found. Please top up first."));
+    
+        if (wallet.getBalance() < 3) {
+            throw new IllegalStateException("Insufficient tokens. Minimum 3 tokens required to search for workers.");
         }
 
         double lat = employerLocation.getLatitude().doubleValue();

@@ -46,4 +46,9 @@ public class TokenDTO {
         private LocalDateTime createdAt;
         private LocalDateTime paidAt;
     }
+    @Data
+    public static class HireRequest {
+        private Long employerId;
+        private Long workerId;
+    }
 }

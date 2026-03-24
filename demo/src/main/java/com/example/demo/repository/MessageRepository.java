@@ -1,8 +1,10 @@
 package com.example.demo.repository;
 
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -47,4 +49,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
         ORDER BY MAX(m.timestamp) DESC
     """)
     List<InboxItemDTO> findInbox(@Param("username") String username);
+    @Modifying
+    @Query("DELETE FROM Message m WHERE (m.sender.id = :user1 AND m.receiver.id = :user2) OR (m.sender.id = :user2 AND m.receiver.id = :user1)")
+    void deleteConversation(@Param("user1") Long user1, @Param("user2") Long user2);
 }

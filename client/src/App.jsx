@@ -16,12 +16,14 @@ import EmployerMessage from "./pages/employerpages/EmployerMessage";
 import LaborFinder from "./pages/employerpages/LaborFinder";
 import EmployerFeed from "./pages/employerpages/EmployerFeed";
 import EmployerSettings from "./pages/employerpages/EmployerSettings"
-import TopUp from "./pages/userpages/UserTopUp";
+import TopUp from "./pages/hybridpages/UserTopUp";
 import PaymentSuccess from "./pages/paymentpages/PaymentSuccess";
 import PaymentCancel from "./pages/paymentpages/PaymentCancel";
 
 import UserManagement from "./pages/adminpages/UserManagement";
 import AdminTokenManagement from "./pages/adminpages/AdminTokenManagement";
+import Wallet from "./pages/hybridpages/Wallet";
+import MyWorkers from "./pages/employerpages/MyWorkers";
 
 function App() {
   return (
@@ -43,15 +45,18 @@ function App() {
         <Route path="/user/myprofile"  element={<UserProfile />} />
         <Route path="/user/message"    element={<UserMessage />} />
         <Route path="/user/topup"      element={<TopUp />} />
+        <Route path="/user/wallet"      element={<Wallet />} />
       </Route>
 
       {/* ── Employer only ──────────────────────────── */}
       <Route element={<AuthGuard allowedRoles={["employer"]} />}>
         <Route path="/employer/feeds"    element={<EmployerFeed />} />
         <Route path="/employer/find"     element={<LaborFinder />} />
+        <Route path="/employer/labor"     element={<MyWorkers />} />
         <Route path="/employer/message"  element={<EmployerMessage />} />
         <Route path="/employer/settings" element={<EmployerSettings />} />
         <Route path="/employer/topup"    element={<TopUp />} />
+        <Route path="/employer/wallet"      element={<Wallet />} />
       </Route>
 
       {/* ── Admin only ─────────────────────────────── */}

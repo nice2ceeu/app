@@ -10,13 +10,16 @@ const ROLE_LINKS = {
     { label: "Feeds", path: "/user/feeds" },
     { label: "My profile", path: "/user/myprofile" },
     { label: "Top Up", path: "/user/topup" },
+    { label: "Wallet", path: "/user/wallet" },
     { label: "Settings", path: "/user/settings" },
   ],
   employer: [
     { label: "Feeds", path: "/employer/feeds" },
     { label: "Laborer Finder", path: "/employer/find" },
+    { label: "Labor List", path: "/employer/labor" },
     { label: "Messages", path: "/employer/message" },
     { label: "Top Up", path: "/employer/topup" },
+    { label: "Wallet", path: "/employer/wallet" },
     { label: "Settings", path: "/employer/settings" },
   ],
   admin: [

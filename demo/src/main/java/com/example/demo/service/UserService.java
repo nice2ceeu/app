@@ -110,6 +110,12 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         userRepo.save(user);
     }
+    public void setVisibleFalse(String username) {
+        User user = userRepo.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found."));
+        user.setVisible(false);
+        userRepo.save(user);
+    }
 
     // ── Auth ─────────────────────────────────────────────────
 
@@ -154,7 +160,8 @@ public class UserService {
                 user.getJobTitle(),
                 user.getUserRole(),
                 user.getVerified(),
-                locationDTO
+                locationDTO,
+                user.getHired()
         );
     }
 }

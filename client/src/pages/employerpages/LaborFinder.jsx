@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useProfile } from "../../context/ProfileContext";
 import Navbar from "../../components/NavBar";
 import { useNavigate } from "react-router-dom";
-
+import HireButton from "../../components/HireComponent/HireButton";
 const API_URL = import.meta.env.VITE_API_URL;
 const AZURE_MAPS_KEY = import.meta.env.VITE_AZURE_MAPS_KEY;
 
@@ -19,7 +19,7 @@ export default function LaborFinder() {
   const [jobTitle, setJobTitle] = useState("");
   const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
-
+  const [wallet, setWallet] = useState(0);
   useEffect(() => {
     if (!profileLoading && !profile) navigate("/login");
   }, [profile, profileLoading]);
@@ -31,9 +31,21 @@ export default function LaborFinder() {
       lng: profile.location.longitude,
     });
   }, [profile]);
+  const fetchWallet = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/tokens/wallet/${profile.id}`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      setWallet(data);
+    } catch (err) {
+      console.error("Failed to fetch wallet:", err);
+    }
+  };
 
   // Initialize map
   useEffect(() => {
+    fetchWallet();
     let script = null;
 
     const initializeMap = () => {
@@ -248,9 +260,32 @@ export default function LaborFinder() {
             Laborer Finder
           </h1>
           <p className="text-sm text-gray-400 mt-1">
-            Find up to 5 available workers within 3.5 km of your location.
+            Find up to 5 available workers within 500 m of your location.
           </p>
         </div>
+        <div className="mb-10 flex items-start justify-between">
+          <div>
+            <p className="font-mono text-[10px] tracking-widest uppercase text-gray-400 mb-2">
+              Queue
+            </p>
+            <h1 className="text-2xl font-light tracking-tight text-gray-900">
+              Nearby Work
+            </h1>
+            <p className="text-sm text-gray-400 mt-1">
+              Let employers discover you based on your location.
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="font-mono text-[10px] tracking-widest uppercase text-gray-400 mb-1">
+              Token Balance
+            </p>
+            <p className="text-2xl font-light text-gray-900">
+              {wallet?.balance ?? 0}
+              <span className="text-xs text-gray-400 ml-1 font-mono">tokens</span>
+            </p>
+          </div>
+        </div>
+
 
         {/* Search bar */}
         <div className="flex gap-2 mb-6">
@@ -283,15 +318,25 @@ export default function LaborFinder() {
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-6 h-px border-t-2 border-dashed border-blue-400 inline-block" />
-            <span className="font-mono text-[10px] tracking-widest uppercase text-gray-400">3.5 km radius</span>
+            <span className="font-mono text-[10px] tracking-widest uppercase text-gray-400">500 m radius</span>
           </div>
         </div>
 
         {error && (
-          <div className="mb-6 flex items-center gap-2.5 px-4 py-3 rounded-lg bg-red-50 text-red-700 border border-red-200 text-sm font-mono">
+        <div className="mb-6 flex items-center justify-between px-4 py-3 rounded-lg bg-red-50 text-red-700 border border-red-200 text-sm font-mono">
+          <div className="flex items-center gap-2.5">
             <span>✕</span> {error}
           </div>
-        )}
+          {error.toLowerCase().includes("token") && (
+            <button
+              onClick={() => navigate("/employer/topup")}
+              className="ml-4 font-mono text-xs tracking-wider text-white bg-gray-900 hover:bg-gray-700 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+            >
+              Top Up →
+            </button>
+          )}
+        </div>
+      )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
@@ -328,6 +373,18 @@ export default function LaborFinder() {
                     <div>
                       <p className="text-sm font-medium text-gray-900">{w.firstName} {w.lastName}</p>
                       <p className="font-mono text-xs text-gray-400 mb-1.5">{w.jobTitle || "No job title"}</p>
+                      <HireButton
+                        employerId={profile.id}
+                        worker={w}
+                        onSuccess={(msg) => {
+                          setToast({ type: "success", message: msg });
+                          setTimeout(() => setToast(null), 3000);
+                        }}
+                        onError={(msg) => {
+                          setToast({ type: "error", message: msg });
+                          setTimeout(() => setToast(null), 4000);
+                        }}
+                      />
                       <button
                         onClick={() => handleMessage(w)}
                         className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-mono text-gray-600 border border-gray-200 rounded-full hover:border-gray-400 hover:text-gray-900 transition-colors bg-white cursor-pointer"

@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+
+import java.security.Principal;
 import java.time.Duration;
 import java.util.Map;
 
@@ -142,4 +144,18 @@ public class UserController {
         if (token == null) return ResponseEntity.status(401).build();
         return ResponseEntity.ok(Map.of("token", token));
     }
+
+    @GetMapping("/hired-status")
+    public ResponseEntity<?> getHiredStatus(HttpServletRequest request) {
+        String username = (String) request.getAttribute("username");
+        if (username == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+
+        User user = userService.findByUsername(username);
+
+        if (Boolean.TRUE.equals(user.getHired())) {
+            userService.setVisibleFalse(username);
+        }
+
+        return ResponseEntity.ok(Map.of("hired", Boolean.TRUE.equals(user.getHired())));
+}
 }

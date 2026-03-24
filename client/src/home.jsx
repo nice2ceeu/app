@@ -13,14 +13,17 @@ const stats = [
 ];
 
 export default function Home() {
+  const navigate = useNavigate();
+
   const [query, setQuery] = useState("");
   const [visible, setVisible] = useState(false);
   const [userVisible, setUserVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
-  const navigate = useNavigate();
   const { profile, loading: profileLoading } = useProfile();
   const userRole = profile?.userRole?.toLowerCase() ?? null;
+  const [hired, setHired] = useState(false);
+
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 80);
@@ -28,8 +31,29 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (!profile || userRole !== "user") return;
+  
+    const fetchHired = async () => {
+      try {
+        const res = await fetch(`${API_URL}/hired-status`, { credentials: "include" });
+        const data = await res.json();
+        if (res.ok) {
+          setHired(data.hired ?? false);
+          if (data.hired) setUserVisible(false);
+        }
+      } catch (err) {
+        console.error("Failed to fetch hired status:", err);
+      }
+    };
+  
+    fetchHired();
+    const interval = setInterval(fetchHired, 30000);
+    return () => clearInterval(interval);
+  }, [profile, userRole]);
+  useEffect(() => {
   if (!profile) return;
   const checkVisibility = async () => {
+    if (!profile || userRole !== "user") return;
     try {
       const res = await fetch(`${API_URL}/users/visibility`, {
         credentials: "include",
@@ -143,27 +167,44 @@ export default function Home() {
             {/* User — ready for nearby work */}
             {userRole === "user" && (
               <div className="flex items-center gap-3">
-                <button
-                  onClick={handleReady}
-                  disabled={loading || userVisible}
-                  className="font-mono text-xs tracking-wider text-white bg-gray-900 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed px-5 py-2.5 rounded-lg transition-colors border-none cursor-pointer"
-                >
-                  {loading ? "Checking…" : userVisible ? "Ready ✓" : "Ready for Nearby Work →"}
-                </button>
-                {userVisible && (
-                  <button
-                    onClick={handleCancel}
-                    disabled={loading}
-                    className="font-mono text-xs tracking-wider text-gray-600 border border-gray-200 hover:border-red-300 hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed px-5 py-2.5 rounded-lg transition-colors bg-white cursor-pointer"
-                  >
-                    {loading ? "Cancelling…" : "Cancel →"}
-                  </button>
-                )}
-                {userVisible && (
-                  <span className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase bg-green-50 text-green-600 border border-green-200 px-2 py-1 rounded">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                    Active
-                  </span>
+                {hired ? (
+                  <>
+                    <span className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase bg-blue-50 text-blue-600 border border-blue-200 px-2 py-1 rounded">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" />
+                      Currently Hired
+                    </span>
+                    <button
+                      onClick={() => navigate("/user/queue")}
+                      className="font-mono text-xs tracking-wider text-blue-600 border border-blue-200 hover:border-blue-400 px-5 py-2.5 rounded-lg transition-colors bg-white cursor-pointer"
+                    >
+                      View Status →
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={handleReady}
+                      disabled={loading || userVisible}
+                      className="font-mono text-xs tracking-wider text-white bg-gray-900 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed px-5 py-2.5 rounded-lg transition-colors border-none cursor-pointer"
+                    >
+                      {loading ? "Checking…" : userVisible ? "Ready ✓" : "Ready for Nearby Work →"}
+                    </button>
+                    {userVisible && (
+                      <button
+                        onClick={handleCancel}
+                        disabled={loading}
+                        className="font-mono text-xs tracking-wider text-gray-600 border border-gray-200 hover:border-red-300 hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed px-5 py-2.5 rounded-lg transition-colors bg-white cursor-pointer"
+                      >
+                        {loading ? "Cancelling…" : "Cancel →"}
+                      </button>
+                    )}
+                    {userVisible && (
+                      <span className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase bg-green-50 text-green-600 border border-green-200 px-2 py-1 rounded">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                        Active
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
             )}

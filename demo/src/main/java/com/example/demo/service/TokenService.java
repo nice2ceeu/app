@@ -27,6 +27,7 @@ public class TokenService {
     private final TokenTransactionRepository transactionRepository;
     private final UserRepository userRepository;
     private final PayMongoService payMongoService;
+    private final HireService hireService;
 
     // ── 1. Frontend calls this → returns checkoutUrl for redirect ─────────────
     @Transactional
@@ -152,6 +153,24 @@ public class TokenService {
         wallet.deductTokens(cost); // throws if insufficient
         walletRepository.save(wallet);
         log.info("User {} spent {} tokens for: {}", userId, cost, reason);
+    }
+    @Transactional
+    public void processHire(Long employerId, Long workerId) {
+        if (getOrCreateWallet(employerId).getBalance() < 3)
+            throw new RuntimeException("Insufficient tokens. Please top up to hire.");
+    
+        if (getOrCreateWallet(workerId).getBalance() < 3)
+            throw new RuntimeException("Worker has insufficient tokens.");
+    
+        spendTokens(employerId, 3, "Hire action (employer)");
+        spendTokens(workerId, 3, "Hire action (worker)");
+    
+        User worker = userRepository.findById(workerId)
+                .orElseThrow(() -> new RuntimeException("Worker not found: " + workerId));
+        worker.setHired(true);
+        userRepository.save(worker);
+    
+        hireService.createHireRecord(employerId, workerId);
     }
 
     // ── Internal helpers ──────────────────────────────────────────────────────

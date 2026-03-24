@@ -187,13 +187,21 @@ export default function UserSettings() {
           <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-mono text-sm text-gray-500 font-medium">
             {form.firstName?.[0]}{form.lastName?.[0]}
           </div>
+
           <div>
             <p className="text-sm font-medium text-gray-900">
               {form.firstName} {form.lastName}
             </p>
-            <span className="font-mono text-[10px] tracking-widest uppercase bg-gray-100 text-gray-400 px-2 py-0.5 rounded">
-              {profile?.userRole}
-            </span>
+
+            <div className="flex gap-2 mt-1">
+              <span className="font-mono text-[10px] tracking-widest uppercase bg-gray-100 text-gray-400 px-2 py-0.5 rounded">
+                {profile?.userRole}
+              </span>
+
+              <span className={`font-mono text-[10px] tracking-widest uppercase bg-gray-100 ${ profile?.verified ? 'text-green-500' : 'text-red-500'} px-2 py-0.5 rounded`}>
+                {profile?.verified ? "Verified" : "Not Verified"}
+              </span>
+            </div>
           </div>
         </div>
 

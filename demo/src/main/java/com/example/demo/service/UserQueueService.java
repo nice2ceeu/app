@@ -24,6 +24,12 @@ public class UserQueueService {
             throw new IllegalStateException("Account is not verified.");
         }
     
+        if (Boolean.TRUE.equals(user.getHired())) {
+            user.setVisible(false);
+            userRepository.save(user);
+            throw new IllegalStateException("You are currently hired and cannot be set as available.");
+        }
+    
         UserLocation location = userLocationRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new IllegalStateException("Location has not been set."));
     

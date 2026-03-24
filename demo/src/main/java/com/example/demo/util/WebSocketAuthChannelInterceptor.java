@@ -26,20 +26,20 @@ public Message<?> preSend(Message<?> message, MessageChannel channel) {
     if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
         String authHeader = accessor.getFirstNativeHeader("Authorization");
 
-        // 👇 Add this temporarily
-        System.out.println("=== WS CONNECT intercepted ===");
-        System.out.println("Authorization header: " + authHeader);
+        // Add this temporarily
+        // System.out.println("=== WS CONNECT intercepted ===");
+        // System.out.println("Authorization header: " + authHeader);
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             try {
                 String username = userService.validateTokenAndGetUsername(authHeader);
-                System.out.println("Authenticated WS user: " + username);
+                // System.out.println("Authenticated WS user: " + username);
                 accessor.setUser(new Principal() {
                     @Override
                     public String getName() { return username; }
                 });
             } catch (Exception e) {
-                System.out.println("JWT validation failed: " + e.getMessage());
+                // System.out.println("JWT validation failed: " + e.getMessage());
                 throw new IllegalArgumentException("Invalid JWT token in WebSocket CONNECT");
             }
         } else {

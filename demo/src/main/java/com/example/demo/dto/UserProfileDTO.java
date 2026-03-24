@@ -16,6 +16,7 @@ public class UserProfileDTO {
     private UserRole userRole;
     private Boolean verified;
     private LocationDTO location;
+    private Boolean hired;
 
     @Data
     @AllArgsConstructor

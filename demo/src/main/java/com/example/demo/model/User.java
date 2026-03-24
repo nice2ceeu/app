@@ -46,4 +46,7 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private UserLocation location;
+    
+    @Column(nullable = false)
+    private Boolean hired = false;
 }

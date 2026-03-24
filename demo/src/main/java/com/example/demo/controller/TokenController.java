@@ -41,9 +41,10 @@ public class TokenController {
                 PageRequest.of(page, size, Sort.by("createdAt").descending())));
     }
 
-    // @GetMapping("/confirm")
-    // public ResponseEntity<TokenDTO.TransactionResponse> confirmPayment(
-    //         @RequestParam("session_id") String sessionId) {
-    //     return ResponseEntity.ok(tokenService.confirmBySessionId(sessionId));
-    // }
+
+    @PostMapping("/hire")
+    public ResponseEntity<Void> hire(@RequestBody TokenDTO.HireRequest request) {
+        tokenService.processHire(request.getEmployerId(), request.getWorkerId());
+        return ResponseEntity.ok().build();
+    }
 }
