@@ -1,9 +1,10 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import HireButton from "../HireComponent/HireButton";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 
-export default function FeedCard({ post, profile }) {
-    const navigate = useNavigate();
+export default function FeedCard({ post, profile, walletBalance }) {  
+    const [toast, setToast] = useState(null);
 
     const authorName = [post.authorFirstName, post.authorLastName]
         .filter(Boolean).join(" ") || "Unknown";
@@ -18,24 +19,28 @@ export default function FeedCard({ post, profile }) {
 
     const isSelf = profile?.id === post.authorId;
 
-    const handleMessage = () => {
-        const receiver = post.authorUsername || 
-                         [post.authorFirstName, post.authorLastName].filter(Boolean).join("").toLowerCase();
-      
-        if (profile.userRole === "employer") {
-          navigate("/employer/message", { state: { receiver } });
-        } else if (profile.userRole === "user") {
-          navigate("/user/message", { state: { receiver } });
-        } else {
-          console.warn("Unknown user role, defaulting to /user/message");
-          navigate("/user/message", { state: { receiver } });
-        }
-      };
+    const worker = {
+        userId: post.authorId,
+        firstName: post.authorFirstName,
+        lastName: post.authorLastName,
+        jobTitle: post.jobTitle ?? "",
+        visible: post.visible ?? true,  // ← include visible if your post DTO has it
+    };
 
     return (
         <div className="bg-white border border-lightborder rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
 
-            {/* Header: avatar + author + date + message button */}
+            {toast && (
+                <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-lg shadow-lg text-sm font-mono tracking-wide ${
+                    toast.type === "error"
+                        ? "bg-red-50 text-red-700 border border-red-200"
+                        : "bg-gray-900 text-white"
+                }`}>
+                    <span>{toast.type === "error" ? "✕" : "✓"}</span>
+                    {toast.message}
+                </div>
+            )}
+
             <div className="flex items-center gap-3 px-paddingX py-paddingY border-b border-lightborder">
                 <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center shrink-0">
                     <span className="text-sm text-white font-medium font-montserrat">{initial}</span>
@@ -45,23 +50,23 @@ export default function FeedCard({ post, profile }) {
                     <span className="text-vs text-lightgray font-poppins tracking-wide">{formattedDate}</span>
                 </div>
 
-                {/* Message button — hidden if viewing own post */}
-                {!isSelf && (
-                    
-                    <button
-                        onClick={handleMessage}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-mono text-gray-600 border border-gray-200 rounded-full hover:border-gray-400 hover:text-gray-900 transition-colors bg-white cursor-pointer"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                        </svg>
-                        Message
-                      </button>
+                {!isSelf && profile?.userRole === "employer" && (
+                    <HireButton
+                        employerId={profile.id}
+                        worker={worker}
+                        walletBalance={walletBalance ?? 0}
+                        onSuccess={(msg) => {
+                            setToast({ type: "success", message: msg });
+                            setTimeout(() => setToast(null), 3000);
+                        }}
+                        onError={(msg) => {
+                            setToast({ type: "error", message: msg });
+                            setTimeout(() => setToast(null), 4000);
+                        }}
+                    />
                 )}
             </div>
 
-            {/* Image */}
             {post.imagePath && (
                 <img
                     src={`${API_URL}${post.imagePath}`}
@@ -70,7 +75,6 @@ export default function FeedCard({ post, profile }) {
                 />
             )}
 
-            {/* Caption */}
             <div className="px-paddingX py-paddingY">
                 <p className="text-sm text-primary font-poppins leading-relaxed whitespace-pre-wrap">
                     {post.caption}

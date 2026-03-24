@@ -10,30 +10,58 @@ const PAGE_SIZE = 10;
 export default function UserFeed() {
     const { profile, loading: profileLoading } = useProfile();
     const location = useLocation();
-    const navigate = useNavigate(); // ✅
+    const navigate = useNavigate();
 
     const [posts, setPosts]     = useState([]);
     const [page, setPage]       = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError]     = useState("");
+    const [wallet, setWallet]   = useState(null);  // ← add this
 
     const sentinelRef = useRef(null);
-    const loadingRef  = useRef(false); // ✅
-    const hasMoreRef  = useRef(true);  // ✅
+    const loadingRef  = useRef(false);
+    const hasMoreRef  = useRef(true);
 
     useEffect(() => {
-        if (!profileLoading && !profile) navigate("/login"); // ✅
+        if (!profileLoading && !profile) navigate("/login");
     }, [profile, profileLoading]);
 
+    // ← add this
+    const fetchWallet = useCallback(async () => {
+        if (!profile?.id) return;
+        try {
+            const res = await fetch(`${API_URL}/api/tokens/wallet/${profile.id}`, {
+                credentials: "include",
+            });
+            const data = await res.json();
+            setWallet(data);
+        } catch (err) {
+            console.error("Failed to fetch wallet:", err);
+        }
+    }, [profile?.id]);
+
+    useEffect(() => {
+        if (profile) fetchWallet();
+    }, [profile, fetchWallet]);
+
     const fetchPage = useCallback(async (pageNum) => {
-        if (loadingRef.current || !hasMoreRef.current) return; // ✅
+        if (loadingRef.current || !hasMoreRef.current) return;
         loadingRef.current = true;
         setLoading(true);
         setError("");
         try {
+            const lat = profile?.location?.latitude;
+            const lng = profile?.location?.longitude;
+    
+            const params = new URLSearchParams({ page: pageNum, size: PAGE_SIZE });
+            if (lat != null && lng != null) {
+                params.append("lat", lat);
+                params.append("lng", lng);
+            }
+    
             const res = await fetch(
-                `${API_URL}/api/posts?page=${pageNum}&size=${PAGE_SIZE}`,
+                `${API_URL}/api/posts?${params}`,
                 { credentials: "include" }
             );
             if (!res.ok) throw new Error("Failed to fetch posts.");
@@ -41,15 +69,15 @@ export default function UserFeed() {
             setPosts((prev) => [...prev, ...data.content]);
             const more = !data.last;
             setHasMore(more);
-            hasMoreRef.current = more; // ✅
+            hasMoreRef.current = more;
             setPage(pageNum + 1);
         } catch (err) {
             setError(err.message);
         } finally {
             setLoading(false);
-            loadingRef.current = false; // ✅
+            loadingRef.current = false;
         }
-    }, []); // ✅ empty deps
+    }, [profile?.location?.latitude, profile?.location?.longitude]); 
 
     useEffect(() => {
         if (!profileLoading && profile) fetchPage(0);
@@ -60,14 +88,14 @@ export default function UserFeed() {
         const observer = new IntersectionObserver(
             (entries) => {
                 if (entries[0].isIntersecting) {
-                    setPage((prev) => { fetchPage(prev); return prev; }); // ✅
+                    setPage((prev) => { fetchPage(prev); return prev; });
                 }
             },
             { threshold: 0.1 }
         );
         observer.observe(sentinelRef.current);
         return () => observer.disconnect();
-    }, [fetchPage]); // ✅ runs once
+    }, [fetchPage]);
 
     if (profileLoading) return (
         <div className="flex items-center justify-center min-h-screen bg-lightbackground">
@@ -99,7 +127,12 @@ export default function UserFeed() {
 
                 <div className="flex flex-col gap-6">
                     {posts.map((post) => (
-                        <FeedCard key={post.id} post={post} profile={profile} />
+                        <FeedCard
+                            key={post.id}
+                            post={post}
+                            profile={profile}
+                            walletBalance={wallet?.balance ?? 0}  // ← now defined
+                        />
                     ))}
                 </div>
 

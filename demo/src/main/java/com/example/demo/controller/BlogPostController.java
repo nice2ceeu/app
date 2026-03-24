@@ -32,26 +32,39 @@ public class BlogPostController {
     // Feed/profile browsing — relaxed, paginated reads are cheap
     @RateLimit(requests = 30, durationSeconds = 60)
     @GetMapping
-    public ResponseEntity<?> getAll(
-            @RequestParam(required = false)    Long   authorId,
-            @RequestParam(defaultValue = "0")  int    page,
-            @RequestParam(defaultValue = "10") int    size,
-            HttpServletRequest request
-    ) {
-        String username = (String) request.getAttribute("username");
-        if (username == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
-        }
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-
-        Page<BlogPostDTO> posts = (authorId != null
-                ? blogPostRepository.findByAuthorId(authorId, pageable)
-                : blogPostRepository.findAll(pageable))
-                .map(this::toDTO);
-
-        return ResponseEntity.ok(posts);
+public ResponseEntity<?> getAll(
+        @RequestParam(required = false)    Long   authorId,
+        @RequestParam(required = false)    Double lat,
+        @RequestParam(required = false)    Double lng,
+        @RequestParam(defaultValue = "0")  int    page,
+        @RequestParam(defaultValue = "10") int    size,
+        HttpServletRequest request
+) {
+    String username = (String) request.getAttribute("username");
+    if (username == null) {
+        return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
     }
+
+    Page<BlogPostDTO> posts;
+
+    if (authorId != null) {
+        // Profile page — JPQL, use camelCase sort
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        posts = blogPostRepository.findByAuthorId(authorId, pageable).map(this::toDTO);
+
+    } else if (lat != null && lng != null) {
+        // Nearby feed — native query handles its own ORDER BY, no sort in Pageable
+        Pageable pageable = PageRequest.of(page, size);
+        posts = blogPostRepository.findNearbyPosts(lat, lng, pageable).map(this::toDTO);
+
+    } else {
+        // Fallback — JPQL, use camelCase sort
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        posts = blogPostRepository.findAll(pageable).map(this::toDTO);
+    }
+
+    return ResponseEntity.ok(posts);
+}
 
     // Post creation involves image upload + DB write — moderate cap to prevent spam
     @RateLimit(requests = 10, durationSeconds = 60)

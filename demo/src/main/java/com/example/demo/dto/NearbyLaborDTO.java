@@ -14,4 +14,6 @@ public class NearbyLaborDTO {
     private String username;
     private String jobTitle;
     private double distanceKm;
+    private Double averageStars;   
+    private Long totalRatings;
 }

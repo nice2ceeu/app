@@ -252,7 +252,8 @@ export default function LaborFinder() {
       <div className="max-w-5xl mx-auto px-6 py-10">
 
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-10 flex items-start justify-between">
+          <div>
           <p className="font-mono text-[10px] tracking-widest uppercase text-gray-400 mb-2">
             Employer
           </p>
@@ -262,18 +263,6 @@ export default function LaborFinder() {
           <p className="text-sm text-gray-400 mt-1">
             Find up to 5 available workers within 500 m of your location.
           </p>
-        </div>
-        <div className="mb-10 flex items-start justify-between">
-          <div>
-            <p className="font-mono text-[10px] tracking-widest uppercase text-gray-400 mb-2">
-              Queue
-            </p>
-            <h1 className="text-2xl font-light tracking-tight text-gray-900">
-              Nearby Work
-            </h1>
-            <p className="text-sm text-gray-400 mt-1">
-              Let employers discover you based on your location.
-            </p>
           </div>
           <div className="text-right">
             <p className="font-mono text-[10px] tracking-widest uppercase text-gray-400 mb-1">
@@ -285,6 +274,7 @@ export default function LaborFinder() {
             </p>
           </div>
         </div>
+        
 
 
         {/* Search bar */}
@@ -372,10 +362,29 @@ export default function LaborFinder() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">{w.firstName} {w.lastName}</p>
-                      <p className="font-mono text-xs text-gray-400 mb-1.5">{w.jobTitle || "No job title"}</p>
+                      <p className="font-mono text-xs text-gray-400">{w.jobTitle || "No job title"}</p>
+
+                      {/* Star rating */}
+                      <div className="flex items-center gap-1 my-1">
+                        {w.averageStars != null ? (
+                          <>
+                            <span className="text-amber-400 text-xs">
+                              {"★".repeat(Math.round(w.averageStars))}
+                              {"☆".repeat(5 - Math.round(w.averageStars))}
+                            </span>
+                            <span className="font-mono text-[10px] text-gray-400">
+                              {w.averageStars.toFixed(1)} ({w.totalRatings})
+                            </span>
+                          </>
+                        ) : (
+                          <span className="font-mono text-[10px] text-gray-300">No ratings yet</span>
+                        )}
+                      </div>
+
                       <HireButton
                         employerId={profile.id}
                         worker={w}
+                        walletBalance={wallet?.balance ?? 0}  // ← add this
                         onSuccess={(msg) => {
                           setToast({ type: "success", message: msg });
                           setTimeout(() => setToast(null), 3000);
@@ -385,16 +394,6 @@ export default function LaborFinder() {
                           setTimeout(() => setToast(null), 4000);
                         }}
                       />
-                      <button
-                        onClick={() => handleMessage(w)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-mono text-gray-600 border border-gray-200 rounded-full hover:border-gray-400 hover:text-gray-900 transition-colors bg-white cursor-pointer"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                        </svg>
-                        Message
-                      </button>
                     </div>
                   </div>
                   <span className="font-mono text-[10px] tracking-wider text-gray-400 bg-white border border-gray-200 px-2 py-1 rounded-lg shrink-0">

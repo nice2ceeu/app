@@ -12,23 +12,28 @@ public interface NearbyLaborRepository extends JpaRepository<UserLocation, Long>
 
     @Query(value = """
         SELECT ul.user_id, ul.latitude, ul.longitude,
-               u.first_name, u.last_name, u.username, u.job_title,
-               (6371 * acos(
-                   cos(radians(:lat)) * cos(radians(ul.latitude)) *
-                   cos(radians(ul.longitude) - radians(:lng)) +
-                   sin(radians(:lat)) * sin(radians(ul.latitude))
-               )) AS distance_km
+            u.first_name, u.last_name, u.username, u.job_title,
+            (6371 * acos(
+                cos(radians(:lat)) * cos(radians(ul.latitude)) *
+                cos(radians(ul.longitude) - radians(:lng)) +
+                sin(radians(:lat)) * sin(radians(ul.latitude))
+            )) AS distance_km,
+            ROUND(AVG(r.stars), 1) AS average_stars,
+            COUNT(r.id) AS total_ratings
         FROM user_location ul
         JOIN users u ON u.id = ul.user_id
+        LEFT JOIN ratings r ON r.worker_id = ul.user_id
         WHERE u.visible = true
-          AND (:jobTitle = '' OR LOWER(u.job_title) LIKE LOWER(CONCAT('%', :jobTitle, '%')))
-          AND (
-               6371 * acos(
-                   cos(radians(:lat)) * cos(radians(ul.latitude)) *
-                   cos(radians(ul.longitude) - radians(:lng)) +
-                   sin(radians(:lat)) * sin(radians(ul.latitude))
-               )
-          ) <= 3.5
+        AND (:jobTitle = '' OR LOWER(u.job_title) LIKE LOWER(CONCAT('%', :jobTitle, '%')))
+        AND (
+            6371 * acos(
+                cos(radians(:lat)) * cos(radians(ul.latitude)) *
+                cos(radians(ul.longitude) - radians(:lng)) +
+                sin(radians(:lat)) * sin(radians(ul.latitude))
+            )
+        ) <= .5
+        GROUP BY ul.user_id, ul.latitude, ul.longitude,
+                u.first_name, u.last_name, u.username, u.job_title
         ORDER BY distance_km ASC
         LIMIT 5
     """, nativeQuery = true)

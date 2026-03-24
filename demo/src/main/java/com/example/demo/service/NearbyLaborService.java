@@ -18,6 +18,7 @@ public class NearbyLaborService {
     private final NearbyLaborRepository nearbyLaborRepository;
     private final UserLocationRepository userLocationRepository;
     private final TokenWalletRepository walletRepository;
+    
     public List<NearbyLaborDTO> getNearbyLabor(String employerUsername, String jobTitle) {
 
         UserLocation employerLocation = userLocationRepository.findByUserUsername(employerUsername)
@@ -46,17 +47,19 @@ public class NearbyLaborService {
         String filter = (jobTitle != null && !jobTitle.isBlank()) ? jobTitle : "";
 
         return nearbyLaborRepository.findNearbyLaborsByJobTitle(lat, lng, filter)
-                .stream()
-                .map(row -> new NearbyLaborDTO(
-                        ((Number) row[0]).longValue(),
-                        ((Number) row[1]).doubleValue(),
-                        ((Number) row[2]).doubleValue(),
-                        (String) row[3],
-                        (String) row[4],
-                        (String) row[5],
-                        (String) row[6],
-                        ((Number) row[7]).doubleValue()
-                ))
-                .toList();
+        .stream()
+        .map(row -> new NearbyLaborDTO(
+                ((Number) row[0]).longValue(),          
+                ((Number) row[1]).doubleValue(),       
+                ((Number) row[2]).doubleValue(),       
+                (String) row[3],                       
+                (String) row[4],                        
+                (String) row[5],                      
+                (String) row[6],                      
+                ((Number) row[7]).doubleValue(),     
+                row[8] != null ? ((Number) row[8]).doubleValue() : null,  
+                row[9] != null ? ((Number) row[9]).longValue() : 0L      
+        ))
+        .toList();
     }
 }

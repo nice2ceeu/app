@@ -162,11 +162,17 @@ public class TokenService {
         if (getOrCreateWallet(workerId).getBalance() < 3)
             throw new RuntimeException("Worker has insufficient tokens.");
     
+        User worker = userRepository.findById(workerId)
+                .orElseThrow(() -> new RuntimeException("Worker not found: " + workerId));
+    
+        // ← check visibility before proceeding
+        if (!Boolean.TRUE.equals(worker.getVisible())) {
+            throw new RuntimeException("Worker is no longer available for hire.");
+        }
+    
         spendTokens(employerId, 3, "Hire action (employer)");
         spendTokens(workerId, 3, "Hire action (worker)");
     
-        User worker = userRepository.findById(workerId)
-                .orElseThrow(() -> new RuntimeException("Worker not found: " + workerId));
         worker.setHired(true);
         userRepository.save(worker);
     
