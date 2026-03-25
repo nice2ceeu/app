@@ -34,10 +34,10 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     @Query("""
     SELECT new com.example.demo.dto.InboxItemDTO(
         CASE WHEN m.sender.username = :username
-             THEN m.receiver.username
-             ELSE m.sender.username END,
-        m.content,
-        m.timestamp,
+            THEN m.receiver.username
+            ELSE m.sender.username END,
+        MAX(m.content),
+        MAX(m.timestamp),
         SUM(CASE WHEN m.seen = false AND m.receiver.username = :username THEN 1 ELSE 0 END)
         )
         FROM Message m
