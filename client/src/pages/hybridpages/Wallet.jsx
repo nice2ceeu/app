@@ -56,7 +56,7 @@ export default function Wallet() {
   if (profileLoading || loading) {
     return (
       <>
-        <Navbar userRole={profile?.userRole} />
+      <Navbar userRole={profile?.userRole} verified={profile?.verified} />
         <div className="max-w-3xl mx-auto px-6 py-10">
           <p className="font-mono text-xs text-gray-400 animate-pulse">Loading…</p>
         </div>
@@ -66,7 +66,7 @@ export default function Wallet() {
 
   return (
     <>
-      <Navbar userRole={profile?.userRole} />
+      <Navbar userRole={profile?.userRole} verified={profile?.verified} />
 
       <div className="max-w-3xl mx-auto px-6 py-10">
 

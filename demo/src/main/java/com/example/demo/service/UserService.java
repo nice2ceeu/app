@@ -2,16 +2,21 @@ package com.example.demo.service;
 
 import com.example.demo.dto.UpdatePasswordDTO;
 import com.example.demo.dto.UpdateProfileDTO;
+import com.example.demo.dto.UserDTO;
 import com.example.demo.dto.UserProfileDTO;
 import com.example.demo.model.User;
+import com.example.demo.model.UserRole;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.util.JwtUtil;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -163,5 +168,30 @@ public class UserService {
                 locationDTO,
                 user.getHired()
         );
+    }
+
+    // Service
+    public List<UserDTO> getAllUsers(String username) {
+        User user = userRepo.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
+
+        if (user.getUserRole() != UserRole.admin) {
+            throw new AccessDeniedException("Access Denied");
+        }
+
+        return userRepo.findByUserRoleNot(UserRole.admin)
+        .stream()
+        .map(u -> UserDTO.builder()
+            .id(u.getId())
+            .firstName(u.getFirstName())
+            .lastName(u.getLastName())
+            .username(u.getUsername())
+            .address(u.getAddress())
+            .jobTitle(u.getJobTitle())
+            .userRole(u.getUserRole())
+            .verified(u.getVerified())
+            .visible(u.getVisible())
+            .build())
+        .toList();
     }
 }

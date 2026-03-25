@@ -79,7 +79,7 @@ export default function TopUp() {
 
   return (
     <>
-      <Navbar userRole={profile?.userRole} />
+   <Navbar userRole={profile?.userRole} verified={profile?.verified} />
 
       {toast && (
         <div

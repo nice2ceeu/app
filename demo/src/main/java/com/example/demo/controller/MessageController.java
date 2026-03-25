@@ -23,7 +23,6 @@ public class MessageController {
  
     private final MessageService messageService;
  
-    // 🔌 WebSocket: Send Message
     // Moderate throttle — prevent spam but allow active conversations
     // @RateLimit(requests = 30, durationSeconds = 60)
     @MessageMapping("/chat")

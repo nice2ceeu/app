@@ -24,6 +24,8 @@ import UserManagement from "./pages/adminpages/UserManagement";
 import AdminTokenManagement from "./pages/adminpages/AdminTokenManagement";
 import Wallet from "./pages/hybridpages/Wallet";
 import MyWorkers from "./pages/employerpages/MyWorkers";
+import VerificationSubmit from "./pages/hybridpages/VerificationSubmit"
+import VerificationAdmin from "./pages/adminpages/VerificationAdmin";
 
 function App() {
   return (
@@ -45,6 +47,7 @@ function App() {
         <Route path="/user/myprofile"  element={<UserProfile />} />
         <Route path="/user/message"    element={<UserMessage />} />
         <Route path="/user/topup"      element={<TopUp />} />
+        <Route path="/user/verify"      element={<VerificationSubmit />} />
         <Route path="/user/wallet"      element={<Wallet />} />
       </Route>
 
@@ -56,6 +59,7 @@ function App() {
         <Route path="/employer/message"  element={<EmployerMessage />} />
         <Route path="/employer/settings" element={<EmployerSettings />} />
         <Route path="/employer/topup"    element={<TopUp />} />
+        <Route path="/employer/verify"      element={<VerificationSubmit />} />
         <Route path="/employer/wallet"      element={<Wallet />} />
       </Route>
 
@@ -63,6 +67,7 @@ function App() {
       <Route element={<AuthGuard allowedRoles={["admin"]} />}>
         <Route path="/admin/usermanagement" element={<UserManagement />} />
         <Route path="/admin/tokens" element={<AdminTokenManagement />} />
+        <Route path="/admin/verification" element={<VerificationAdmin />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

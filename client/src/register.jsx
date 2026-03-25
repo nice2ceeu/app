@@ -12,7 +12,8 @@ export default function Register() {
     jobTitle: "",
     userRole: "",
     verified: false,
-    visible:false
+    visible:false,
+    hired:false
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");

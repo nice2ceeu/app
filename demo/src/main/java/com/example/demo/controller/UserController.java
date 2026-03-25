@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.UpdatePasswordDTO;
 import com.example.demo.dto.UpdateProfileDTO;
+import com.example.demo.dto.UserDTO;
 import com.example.demo.dto.UserProfileDTO;
 import com.example.demo.model.User;
 import com.example.demo.service.UserService;
@@ -13,12 +14,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 
-import java.security.Principal;
 import java.time.Duration;
 import java.util.Map;
-
+import java.util.NoSuchElementException;
 import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +30,6 @@ public class UserController {
 
     private final UserService userService;
 
-    // ── Auth ─────────────────────────────────────────────────
 
     // Already set — brute-force protection
     @RateLimit(requests = 3, durationSeconds = 30)
@@ -157,5 +158,23 @@ public class UserController {
         }
 
         return ResponseEntity.ok(Map.of("hired", Boolean.TRUE.equals(user.getHired())));
-}
+    }
+    //for admin
+    @GetMapping("/admin/all-user")
+    public ResponseEntity<?> getAllUsers(HttpServletRequest request) {
+        String username = (String) request.getAttribute("username");
+
+        if (username == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        try {
+            List<UserDTO> users = userService.getAllUsers(username);
+            return ResponseEntity.ok(users);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
+        }
+    }
 }

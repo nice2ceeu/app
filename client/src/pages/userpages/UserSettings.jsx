@@ -139,7 +139,7 @@ export default function UserSettings() {
 
   return (
     <>
-      <Navbar userRole={profile.userRole}/>
+      <Navbar userRole={profile?.userRole} verified={profile?.verified} />
       {/* Location Picker Modal */}
       {showPicker && (
         <LocationPicker

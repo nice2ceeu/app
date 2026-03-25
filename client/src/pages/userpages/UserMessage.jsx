@@ -20,7 +20,7 @@ export default function UserMessage() {
 
     return (
         <>
-            <Navbar userRole={profile.userRole} />
+           <Navbar userRole={profile?.userRole} verified={profile?.verified} />
             <div className="flex h-[calc(100vh-64px)]">
                 <Inbox
                     currentUser={profile.username}

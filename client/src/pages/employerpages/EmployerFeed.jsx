@@ -109,7 +109,7 @@ export default function UserFeed() {
 
     return (
         <>
-            <Navbar userRole={profile?.userRole ?? null} />
+            <Navbar userRole={profile?.userRole} verified={profile?.verified} />
 
             <div className="max-w-2xl mx-auto px-paddingX py-paddingY">
 

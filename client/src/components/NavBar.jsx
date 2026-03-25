@@ -11,6 +11,7 @@ const ROLE_LINKS = {
     { label: "My profile", path: "/user/myprofile" },
     { label: "Top Up", path: "/user/topup" },
     { label: "Wallet", path: "/user/wallet" },
+    { label: "Verify First", path: "/user/verify", requiresUnverified: true },
     { label: "Settings", path: "/user/settings" },
   ],
   employer: [
@@ -20,22 +21,38 @@ const ROLE_LINKS = {
     { label: "Messages", path: "/employer/message" },
     { label: "Top Up", path: "/employer/topup" },
     { label: "Wallet", path: "/employer/wallet" },
+    { label: "Verify First", path: "/employer/verify", requiresUnverified: true },
     { label: "Settings", path: "/employer/settings" },
   ],
   admin: [
     { label: "Manage User", path: "/admin/usermanagement" },
+    { label: "Manage Non-Verified Users", path: "/admin/verification" },
     { label: "Manage Token", path: "/admin/tokens" },
-
   ],
 };
 
-export default function Navbar({ userRole }) {
+const linkClass = ({ isActive }, isVerify = false) =>
+  `text-sm px-3 py-1.5 rounded-md transition whitespace-nowrap no-underline ${
+    isActive
+      ? isVerify
+        ? "text-red-600 bg-red-50 font-medium"
+        : "text-gray-900 bg-gray-100 font-medium"
+      : isVerify
+      ? "text-red-500 hover:text-red-700 hover:bg-red-50"
+      : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+  }`;
+
+export default function Navbar({ userRole , verified}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { setProfile } = useProfile();
 
   const normalizedRole = userRole?.toLowerCase();
-  const extraLinks = normalizedRole ? (ROLE_LINKS[normalizedRole] ?? []) : [];
+  const extraLinks = normalizedRole
+  ? (ROLE_LINKS[normalizedRole] ?? []).filter(
+      (link) => !link.requiresUnverified || !verified
+    )
+  : [];
 
   const handleSignOut = async () => {
     await fetch(`${API_URL}/signout`, {
@@ -46,13 +63,7 @@ export default function Navbar({ userRole }) {
     navigate("/login", { replace: true });
   };
 
-  const linkClass = ({ isActive }) =>
-    `text-sm px-3 py-1.5 rounded-md transition whitespace-nowrap no-underline ${
-      isActive
-        ? "text-gray-900 bg-gray-100 font-medium"
-        : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
-    }`;
-
+  
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-gray-200">
       <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between gap-4">
@@ -73,11 +84,15 @@ export default function Navbar({ userRole }) {
 
         {/* Desktop links */}
         <div className="hidden sm:flex items-center gap-1 flex-1">
-          {extraLinks.map((link) => (
-            <NavLink key={link.path} to={link.path} className={linkClass}>
-              {link.label}
-            </NavLink>
-          ))}
+        {extraLinks.map((link) => (
+          <NavLink
+            key={link.path}
+            to={link.path}
+            className={(state) => linkClass(state, link.requiresUnverified)}
+          >
+            {link.label}
+          </NavLink>
+        ))}
           {!userRole && (
             <>
               <NavLink to="/login" className={linkClass}>Login</NavLink>
@@ -122,7 +137,11 @@ export default function Navbar({ userRole }) {
             <NavLink
               key={link.path}
               to={link.path}
-              className="text-sm text-gray-700 px-2.5 py-2 rounded-md hover:bg-gray-50 no-underline"
+              className={`text-sm px-2.5 py-2 rounded-md hover:bg-gray-50 no-underline ${
+                link.requiresUnverified
+                  ? "text-red-500 hover:bg-red-50 hover:text-red-700"
+                  : "text-gray-700"
+              }`}
               onClick={() => setMenuOpen(false)}
             >
               {link.label}

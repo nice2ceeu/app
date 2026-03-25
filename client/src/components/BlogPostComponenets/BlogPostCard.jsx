@@ -82,10 +82,7 @@ export default function BlogPostCard({ post, onEdit, onDelete }) {
           {post.caption}
         </p>
 
-        {/* Read more hint */}
-        <span className="font-mono text-[10px] tracking-wider uppercase text-gray-300 group-hover:text-gray-500 transition-colors">
-          Read more →
-        </span>
+       
       </div>
     </article>
   );

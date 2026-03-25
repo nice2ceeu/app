@@ -166,7 +166,7 @@ export default function UserProfile() {
 
   return (
     <>
-      <Navbar userRole={profile?.userRole ?? null} />
+      <Navbar userRole={profile?.userRole} verified={profile?.verified} />
       <div className="max-w-5xl mx-auto px-6 py-10">
 
         <div className="flex items-center justify-between gap-5 mb-10 pb-8 border-b border-gray-200">

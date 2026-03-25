@@ -137,7 +137,7 @@ export default function EmployerSettings() {
 
   return (
     <>
-      <Navbar userRole={profile.userRole} />
+      <Navbar userRole={profile?.userRole} verified={profile?.verified} />
 
       {showPicker && (
         <LocationPicker

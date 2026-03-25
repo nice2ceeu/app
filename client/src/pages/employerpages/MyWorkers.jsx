@@ -293,7 +293,7 @@ export default function MyWorkers() {
 
   return (
     <>
-      <Navbar userRole={profile.userRole} />
+     <Navbar userRole={profile?.userRole} verified={profile?.verified} />
 
       {/* Rating Modal */}
       {ratingTarget && (
