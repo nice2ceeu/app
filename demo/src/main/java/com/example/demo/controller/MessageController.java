@@ -31,7 +31,7 @@ public class MessageController {
     }
  
     // Paginated read — relaxed limit, still guards against scraping
-    // @RateLimit(requests = 30, durationSeconds = 60)
+    @RateLimit(requests = 30, durationSeconds = 60)
     @GetMapping("/messages/{user1}/{user2}")
     @ResponseBody
     public ResponseEntity<?> getConversation(
@@ -55,7 +55,7 @@ public class MessageController {
     }
  
     // Inbox polling — tighter cap to prevent aggressive polling loops
-    // @RateLimit(requests = 10, durationSeconds = 60)
+    @RateLimit(requests = 10, durationSeconds = 60)
     @GetMapping("/inbox")
     @ResponseBody
     public ResponseEntity<?> getInbox(HttpServletRequest request) {

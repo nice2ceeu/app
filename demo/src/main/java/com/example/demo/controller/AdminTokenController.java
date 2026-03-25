@@ -17,7 +17,6 @@ public class AdminTokenController {
 
     private final TokenService tokenService;
 
-    // ── GET /api/admin/tokens/transactions ────────────────────────────────────
     // All transactions across all users
     @GetMapping("/transactions")
     public ResponseEntity<Page<TokenDTO.TransactionResponse>> getAllTransactions(
@@ -27,7 +26,6 @@ public class AdminTokenController {
                 PageRequest.of(page, size, Sort.by("createdAt").descending())));
     }
 
-    // ── GET /api/admin/tokens/transactions/user/{userId} ──────────────────────
     // Transactions for a specific user
     @GetMapping("/transactions/user/{userId}")
     public ResponseEntity<Page<TokenDTO.TransactionResponse>> getUserTransactions(
@@ -38,7 +36,6 @@ public class AdminTokenController {
                 PageRequest.of(page, size, Sort.by("createdAt").descending())));
     }
 
-    // ── GET /api/admin/tokens/wallet/{userId} ─────────────────────────────────
     // View a specific user's wallet balance
     @GetMapping("/wallet/{userId}")
     public ResponseEntity<TokenDTO.WalletResponse> getUserWallet(@PathVariable Long userId) {

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.example.demo.ratelimiter.RateLimit;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -20,6 +21,7 @@ public class VerificationApplicationController {
     private final VerificationApplicationService verificationService;
 
     // ── Submit application (user / employer) ─────────────────────────────
+    @RateLimit(requests =  3 , durationSeconds = 3600)
     @PostMapping("/submit")
     public ResponseEntity<?> submit(
             HttpServletRequest request,
@@ -39,7 +41,7 @@ public class VerificationApplicationController {
             return ResponseEntity.status(500).body(Map.of("error", "Failed to submit application"));
         }
     }
-
+    @RateLimit(requests =  10 , durationSeconds = 60)
     @GetMapping("/my")
     public ResponseEntity<?> getMyApplication(HttpServletRequest request) {
         String username = (String) request.getAttribute("username");
@@ -53,6 +55,7 @@ public class VerificationApplicationController {
     }
 
     // ── Get all applications (admin) ─────────────────────────────────────
+    @RateLimit(requests =  20 , durationSeconds = 60)
     @GetMapping("/admin/all")
     public ResponseEntity<?> getAll(HttpServletRequest request) {
         String username = (String) request.getAttribute("username");
@@ -68,6 +71,7 @@ public class VerificationApplicationController {
     }
 
     // ── Approve (admin) ──────────────────────────────────────────────────
+    @RateLimit(requests =  10 , durationSeconds = 60)
     @PatchMapping("/admin/approve/{id}")
     public ResponseEntity<?> approve(
             HttpServletRequest request,
@@ -86,6 +90,7 @@ public class VerificationApplicationController {
     }
 
     // ── Reject (admin) ───────────────────────────────────────────────────
+    @RateLimit(requests =  10 , durationSeconds = 60)
     @PatchMapping("/admin/reject/{id}")
     public ResponseEntity<?> reject(
             HttpServletRequest request,

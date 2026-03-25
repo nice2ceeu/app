@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.ratelimiter.RateLimit;
 import com.example.demo.service.HireService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,7 @@ import java.util.Map;
 public class HireController {
 
     private final HireService hireService;
-
+    @RateLimit(requests = 20, durationSeconds = 60)
     @GetMapping
     public ResponseEntity<?> getActiveWorkers(HttpServletRequest request) {
         String username = (String) request.getAttribute("username");
@@ -23,7 +24,7 @@ public class HireController {
         List<Map<String, Object>> workers = hireService.getActiveWorkers(username);
         return ResponseEntity.ok(workers);
     }
-
+    @RateLimit(requests = 5, durationSeconds = 60)
     @PostMapping("/{hireId}/end")
     public ResponseEntity<?> endContract(
             @PathVariable Long hireId,
@@ -39,6 +40,7 @@ public class HireController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+    @RateLimit(requests = 5, durationSeconds = 60)
     @PostMapping("/{hireId}/cancel")
     public ResponseEntity<?> cancelContract(
             @PathVariable Long hireId,
