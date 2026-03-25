@@ -24,7 +24,7 @@ export default function FeedCard({ post, profile, walletBalance }) {
         firstName: post.authorFirstName,
         lastName: post.authorLastName,
         jobTitle: post.jobTitle ?? "",
-        visible: post.visible ?? true,  // ← include visible if your post DTO has it
+        visible: post.visible ?? true, 
     };
 
     return (

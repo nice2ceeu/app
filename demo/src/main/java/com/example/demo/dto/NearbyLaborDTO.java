@@ -2,7 +2,6 @@ package com.example.demo.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
 @Data
 @AllArgsConstructor
 public class NearbyLaborDTO {
@@ -16,4 +15,5 @@ public class NearbyLaborDTO {
     private double distanceKm;
     private Double averageStars;   
     private Long totalRatings;
+    private boolean visible; 
 }

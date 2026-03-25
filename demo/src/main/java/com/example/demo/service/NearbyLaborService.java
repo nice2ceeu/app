@@ -49,17 +49,18 @@ public class NearbyLaborService {
         return nearbyLaborRepository.findNearbyLaborsByJobTitle(lat, lng, filter)
         .stream()
         .map(row -> new NearbyLaborDTO(
-                ((Number) row[0]).longValue(),          
-                ((Number) row[1]).doubleValue(),       
-                ((Number) row[2]).doubleValue(),       
-                (String) row[3],                       
-                (String) row[4],                        
-                (String) row[5],                      
-                (String) row[6],                      
-                ((Number) row[7]).doubleValue(),     
-                row[8] != null ? ((Number) row[8]).doubleValue() : null,  
-                row[9] != null ? ((Number) row[9]).longValue() : 0L      
+                ((Number) row[0]).longValue(),
+                ((Number) row[1]).doubleValue(),
+                ((Number) row[2]).doubleValue(),
+                (String) row[3],
+                (String) row[4],
+                (String) row[5],
+                (String) row[6],
+                ((Number) row[7]).doubleValue(),
+                row[8] != null ? ((Number) row[8]).doubleValue() : null,
+                row[9] != null ? ((Number) row[9]).longValue() : 0L,
+                row[10] != null && (Boolean) row[10]
         ))
-        .toList();
+    .toList();
     }
 }

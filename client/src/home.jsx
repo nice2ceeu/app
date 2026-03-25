@@ -110,7 +110,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar userRole={userRole} />
+      <Navbar userRole={profile?.userRole} verified={profile?.verified} />
 
       {/* Toast */}
       {toast && (

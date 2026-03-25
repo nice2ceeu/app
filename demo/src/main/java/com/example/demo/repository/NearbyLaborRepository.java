@@ -19,7 +19,8 @@ public interface NearbyLaborRepository extends JpaRepository<UserLocation, Long>
                 sin(radians(:lat)) * sin(radians(ul.latitude))
             )) AS distance_km,
             ROUND(AVG(r.stars), 1) AS average_stars,
-            COUNT(r.id) AS total_ratings
+            COUNT(r.id) AS total_ratings,
+            u.visible
         FROM user_location ul
         JOIN users u ON u.id = ul.user_id
         LEFT JOIN ratings r ON r.worker_id = ul.user_id
@@ -33,7 +34,7 @@ public interface NearbyLaborRepository extends JpaRepository<UserLocation, Long>
             )
         ) <= .5
         GROUP BY ul.user_id, ul.latitude, ul.longitude,
-                u.first_name, u.last_name, u.username, u.job_title
+                u.first_name, u.last_name, u.username, u.job_title, u.visible
         ORDER BY distance_km ASC
         LIMIT 5
     """, nativeQuery = true)
