@@ -26,6 +26,7 @@ import Wallet from "./pages/hybridpages/Wallet";
 import MyWorkers from "./pages/employerpages/MyWorkers";
 import VerificationSubmit from "./pages/hybridpages/VerificationSubmit"
 import VerificationAdmin from "./pages/adminpages/VerificationAdmin";
+import EmployerUpgrade from "./pages/employerpages/EmployerUpgrade";
 
 function App() {
   return (
@@ -61,6 +62,7 @@ function App() {
         <Route path="/employer/topup"    element={<TopUp />} />
         <Route path="/employer/verify"      element={<VerificationSubmit />} />
         <Route path="/employer/wallet"      element={<Wallet />} />
+        <Route path="/employer/upgrade"      element={<EmployerUpgrade />} />
       </Route>
 
       {/* ── Admin only ─────────────────────────────── */}

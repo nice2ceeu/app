@@ -15,6 +15,7 @@ public class UserProfileDTO {
     private String jobTitle;
     private UserRole userRole;
     private Boolean verified;
+    private Boolean upgraded;
     private LocationDTO location;
     private Boolean hired;
 

@@ -165,8 +165,10 @@ public class UserService {
                 user.getJobTitle(),
                 user.getUserRole(),
                 user.getVerified(),
+                user.getUpgraded(),
                 locationDTO,
                 user.getHired()
+
         );
     }
 

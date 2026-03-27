@@ -44,6 +44,9 @@ public class User {
     @Column(nullable = false)
     private Boolean visible =false;
 
+    @Column(nullable = false)
+    private Boolean upgraded =false;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private UserLocation location;
     
