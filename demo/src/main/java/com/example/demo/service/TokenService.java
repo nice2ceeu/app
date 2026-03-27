@@ -73,18 +73,21 @@ public class TokenService {
 
         if (tx.getStatus() == TransactionStatus.PAID) {
             log.info("Webhook already processed for session: {}", sessionId);
-            return; // idempotent — safe to call twice
+            return;
         }
 
-        // Credit tokens to wallet
         creditWallet(tx);
 
         tx.setStatus(TransactionStatus.PAID);
         tx.setPaidAt(LocalDateTime.now());
         transactionRepository.save(tx);
-        
+
+        // ── Mark user as upgraded ─────────────────────────────────────────────
+        // userRepository.upgradeUser(tx.getUser().getId());
+        // log.info("User {} marked as upgraded (session {})", tx.getUser().getId(), sessionId);
+
         log.info("Tokens credited: {} tokens to user {} (session {})",
-        tx.getTokensAdded(), tx.getUser().getId(), sessionId);
+            tx.getTokensAdded(), tx.getUser().getId(), sessionId);
     }
 
     // ── 3. Called from success_url page to confirm payment ────────────────────
@@ -131,6 +134,8 @@ public class TokenService {
     public TokenDTO.WalletResponse getWallet(Long userId) {
         return toWalletResponse(getOrCreateWallet(userId));
     }
+
+    
 
     // ── Transaction history ───────────────────────────────────────────────────
     public Page<TokenDTO.TransactionResponse> getUserHistory(Long userId, Pageable pageable) {

@@ -21,6 +21,6 @@ public class NearbyLaborDTO {
     private Double averageStars;
     private Long totalRatings;
     private boolean visible;
-    private boolean isHirable;
+    private boolean hirable;
     private String hireStatus;
 }

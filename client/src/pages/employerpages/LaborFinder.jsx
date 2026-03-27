@@ -104,21 +104,21 @@ export default function LaborFinder() {
   useEffect(() => {
     if (!map || !employerCoords) return;
 
-    [
-      "radiusLayer", "radiusBorderLayer",
-      "grayRadiusLayer", "grayRadiusBorderLayer",
-      "employerLayer", "laborLayer",
-    ].forEach((id) => {
-      if (map.layers.getLayerById(id)) map.layers.remove(id);
-    });
-    [
-      "radiusSource", "grayRadiusSource",
-      "employerSource", "laborSource",
-    ].forEach((id) => {
-      if (map.sources.getById(id)) map.sources.remove(id);
-    });
+   [
+    ...(profile?.upgraded ? [] : ["radiusLayer", "radiusBorderLayer"]),
+    "grayRadiusLayer", "grayRadiusBorderLayer",
+    "employerLayer", "laborLayer",
+  ].forEach((id) => {
+    if (map.layers.getLayerById(id)) map.layers.remove(id);
+  });
+  [
+    ...(profile?.upgraded ? [] : ["radiusSource"]),
+    "grayRadiusSource", "employerSource", "laborSource",
+  ].forEach((id) => {
+    if (map.sources.getById(id)) map.sources.remove(id);
+  });
 
-    // Blue circle — 500m hirable zone
+    if (!profile?.upgraded) {
     const radiusPoints = atlas.math.getRegularPolygonPath(
       [employerCoords.lng, employerCoords.lat],
       500, 360, "meters"
@@ -134,6 +134,7 @@ export default function LaborFinder() {
       strokeWidth: 1.5,
       strokeDashArray: [4, 4],
     }), "labels");
+  }
 
     // Gray circle — 1024m search zone
     const grayRadiusPoints = atlas.math.getRegularPolygonPath(
@@ -173,13 +174,13 @@ export default function LaborFinder() {
             name: w.hireStatus === "LOCKED" ? "——— ———" : `${w.firstName} ${w.lastName}`,
             jobTitle: w.jobTitle,
             distance: w.distanceKm.toFixed(2),
-            isHirable: w.isHirable,
+            hirable: w.hirable,
           }
         ));
       });
 
       const laborLayer = new atlas.layer.BubbleLayer(laborSource, "laborLayer", {
-        color: ["case", ["get", "isHirable"], "#22c55e", "#9ca3af"],
+        color: ["case", ["get", "hirable"], "#22c55e", "#9ca3af"],
         radius: 10,
         strokeColor: "#ffffff",
         strokeWidth: 2,
@@ -205,8 +206,8 @@ export default function LaborFinder() {
               <p style="margin: 0 0 4px; font-size: 11px; color: #9ca3af;">
                 ${props.distance} km away
               </p>
-              <p style="margin: 0; font-size: 11px; color: ${props.isHirable ? "#22c55e" : "#9ca3af"};">
-                ${props.isHirable ? "✓ Hirable" : "✕ Out of hire range"}
+              <p style="margin: 0; font-size: 11px; color: ${props.hirable ? "#22c55e" : "#9ca3af"};">
+                ${props.hirable ? "✓ Hirable" : "✕ Out of hire range"}
               </p>
             </div>
           `,
@@ -259,7 +260,7 @@ export default function LaborFinder() {
   const handleKeyDown = (e) => {
     if (e.key === "Enter") handleSearch();
   };
-
+ 
   if (profileLoading) {
     return (
       <div className="max-w-3xl mx-auto px-6 py-10">
@@ -342,10 +343,12 @@ export default function LaborFinder() {
             <span className="w-3 h-3 rounded-full bg-gray-400 inline-block" />
             <span className="font-mono text-[10px] tracking-widest uppercase text-gray-400">Out of range</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-6 h-px border-t-2 border-dashed border-blue-400 inline-block" />
-            <span className="font-mono text-[10px] tracking-widest uppercase text-gray-400">500 m</span>
-          </div>
+          {!profile?.upgraded && (
+            <div className="flex items-center gap-1.5">
+              <span className="w-6 h-px border-t-2 border-dashed border-blue-400 inline-block" />
+              <span className="font-mono text-[10px] tracking-widest uppercase text-gray-400">500 m</span>
+            </div>
+          )}
           <div className="flex items-center gap-1.5">
             <span className="w-6 h-px border-t-2 border-dashed border-gray-400 inline-block" />
             <span className="font-mono text-[10px] tracking-widest uppercase text-gray-400">1024 m</span>
@@ -421,12 +424,16 @@ export default function LaborFinder() {
                             <span className="font-mono text-[10px] text-gray-300">No ratings yet</span>
                           )}
                         </div>
-                        <button
-                          onClick={() => navigate("/employer/upgrade")}
-                          className="font-mono text-[10px] tracking-wider text-blue-500 hover:text-blue-700 mt-1 block transition-colors"
-                        >
-                          Upgrade to unlock →
-                        </button>
+                        {!profile?.upgraded ? (
+                          <button onClick={() => navigate("/employer/upgrade")}
+                            className="font-mono text-[10px] tracking-wider text-blue-500 hover:text-blue-700 mt-1 block transition-colors">
+                            Upgrade to unlock →
+                          </button>
+                        ) : (
+                          <span className="font-mono text-[10px] text-gray-400 mt-1 block">
+                            Out of hire range
+                          </span>
+                        )}
                       </div>
                     </div>
                     <span className="font-mono text-[10px] tracking-wider text-gray-300 bg-white border border-gray-100 px-2 py-1 rounded-lg shrink-0">

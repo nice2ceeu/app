@@ -108,7 +108,7 @@ export default function EmployerUpgrade() {
                 Current Plan
               </p>
               <p className="text-sm font-medium text-gray-900 capitalize">
-                {profile?.plan ?? "Free"}
+                {profile?.upgraded ? "Pro" : "Free"}
               </p>
             </div>
             <span className="px-2.5 py-1 rounded bg-white border border-gray-200 font-mono text-[10px] tracking-widest uppercase text-gray-500">

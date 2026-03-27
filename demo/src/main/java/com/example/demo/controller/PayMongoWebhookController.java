@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
-
+import com.example.demo.service.SubscriptionService;
 import java.util.HexFormat;
 
 import javax.crypto.Mac;
@@ -25,6 +25,7 @@ public class PayMongoWebhookController {
     private String webhookSecret;
     
     private final TokenService tokenService;
+    private final SubscriptionService subscriptionService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @PostMapping("/paymongo")
@@ -47,21 +48,24 @@ public class PayMongoWebhookController {
             log.info("PayMongo webhook received: {}", eventType);
 
             if ("checkout_session.payment.paid".equals(eventType)) {
-                // The session ID is nested inside the event data
-                String sessionId = root
-                        .path("data")
-                        .path("attributes")
-                        .path("data")
-                        .path("id")
-                        .asText();
+            String sessionId = root
+                    .path("data")
+                    .path("attributes")
+                    .path("data")
+                    .path("id")
+                    .asText();
 
-                if (sessionId == null || sessionId.isBlank()) {
-                    log.error("No session ID found in webhook payload");
-                    return ResponseEntity.badRequest().build();
-                }
-
-                tokenService.handleWebhook(sessionId);
+            if (sessionId == null || sessionId.isBlank()) {
+                log.error("No session ID found in webhook payload");
+                return ResponseEntity.badRequest().build();
             }
+
+            // Try subscription first; falls back gracefully if not found
+            subscriptionService.handleWebhook(sessionId);
+
+            // Always run token webhook too (it's idempotent)
+            tokenService.handleWebhook(sessionId);
+        }
 
             // Always return 200 so PayMongo doesn't retry
             return ResponseEntity.ok().build();
