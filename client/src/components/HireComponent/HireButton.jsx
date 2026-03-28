@@ -10,11 +10,7 @@ export default function HireButton({ employerId, worker, onSuccess, onError, wal
   const navigate = useNavigate();
 
   const handleButtonClick = () => {
-    // Check visibility before opening modal
-    if (!worker.visible) {
-      onError?.("This worker isn't available as of now.");
-      return;
-    }
+   
     // Check token balance before opening modal
     if (walletBalance < 3) {
       onError?.("Insufficient tokens. Please top up to hire.");
