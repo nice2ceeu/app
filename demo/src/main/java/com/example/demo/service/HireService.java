@@ -7,7 +7,9 @@ import com.example.demo.repository.HireRecordRepository;
 import com.example.demo.repository.MessageRepository;
 import com.example.demo.repository.TokenWalletRepository;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class HireService {
@@ -23,6 +26,8 @@ public class HireService {
     private final UserRepository userRepository;
     private final TokenWalletRepository walletRepository;
     private final MessageRepository messageRepository;
+    private final NotificationService notificationService;
+
     @Transactional
     public void createHireRecord(Long employerId, Long workerId) {
         User employer = userRepository.findById(employerId)
@@ -46,14 +51,14 @@ public class HireService {
                         "workerId",  r.getWorker().getId(),
                         "firstName", r.getWorker().getFirstName(),
                         "lastName",  r.getWorker().getLastName(),
-                        "username",  r.getWorker().getUsername(),  // ← add this
+                        "username",  r.getWorker().getUsername(),
                         "jobTitle",  r.getWorker().getJobTitle() != null
                                         ? r.getWorker().getJobTitle() : "No job title",
                         "hiredAt",   r.getHiredAt().toString()
                 ))
                 .toList();
     }
-    
+
     @Transactional
     public void endContract(Long hireId, String username) {
         User employer = userRepository.findByUsername(username)
@@ -72,11 +77,13 @@ public class HireService {
         worker.setHired(false);
         userRepository.save(worker);
 
-        // Clear conversation
         messageRepository.deleteConversation(employer.getId(), worker.getId());
+
+        notificationService.sendPush(worker.getId(), "Contract Ended", "Your contract has been ended by the employer.");
     }
+
     @Transactional
-        public void cancelContract(Long hireId, String username) {
+    public void cancelContract(Long hireId, String username) {
         User employer = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Employer not found."));
 
@@ -84,10 +91,10 @@ public class HireService {
                 .orElseThrow(() -> new RuntimeException("Hire record not found."));
 
         if (!record.getEmployer().getId().equals(employer.getId()))
-                throw new RuntimeException("Forbidden.");
+            throw new RuntimeException("Forbidden.");
 
         if (record.getHiredAt().isBefore(LocalDateTime.now().minusMinutes(10)))
-                throw new RuntimeException("Cancellation window has expired. You can only cancel within 10 minutes of hiring.");
+            throw new RuntimeException("Cancellation window has expired. You can only cancel within 10 minutes of hiring.");
 
         record.setActive(false);
         hireRecordRepository.save(record);
@@ -102,5 +109,7 @@ public class HireService {
         walletRepository.save(workerWallet);
 
         messageRepository.deleteConversation(employer.getId(), worker.getId());
-        }
+
+        notificationService.sendPush(worker.getId(), "Contract Cancelled", "Your contract was cancelled. A refund of 3 tokens has been issued.");
+    }
 }

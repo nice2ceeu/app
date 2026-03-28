@@ -5,10 +5,17 @@ import { ProfileProvider } from "./context/ProfileContext";
 import App from './App.jsx'
 import './index.css'
 
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js') 
+    .then(reg => console.log('Service Worker registered', reg))
+    .catch(err => console.error('SW registration error', err));
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <ProfileProvider>
         <App />
       </ProfileProvider>
     </BrowserRouter>
-);
+); 
