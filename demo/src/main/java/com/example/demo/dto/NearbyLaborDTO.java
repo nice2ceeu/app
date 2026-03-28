@@ -20,7 +20,6 @@ public class NearbyLaborDTO {
     private double distanceKm;
     private Double averageStars;
     private Long totalRatings;
-    private boolean visible;
     private boolean hirable;
     private String hireStatus;
 }
