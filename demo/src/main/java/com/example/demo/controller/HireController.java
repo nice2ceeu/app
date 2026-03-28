@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ import java.util.Map;
 public class HireController {
 
     private final HireService hireService;
+
     @RateLimit(requests = 20, durationSeconds = 60)
     @GetMapping
     public ResponseEntity<?> getActiveWorkers(HttpServletRequest request) {
@@ -24,6 +26,7 @@ public class HireController {
         List<Map<String, Object>> workers = hireService.getActiveWorkers(username);
         return ResponseEntity.ok(workers);
     }
+
     @RateLimit(requests = 5, durationSeconds = 60)
     @PostMapping("/{hireId}/end")
     public ResponseEntity<?> endContract(
@@ -40,6 +43,7 @@ public class HireController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
     @RateLimit(requests = 5, durationSeconds = 60)
     @PostMapping("/{hireId}/cancel")
     public ResponseEntity<?> cancelContract(

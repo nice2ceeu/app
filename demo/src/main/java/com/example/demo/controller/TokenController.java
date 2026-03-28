@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.TokenDTO;
 import com.example.demo.ratelimiter.RateLimit;
 import com.example.demo.service.TokenService;
+import com.example.demo.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -10,12 +11,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
 @RequestMapping("/api/tokens")
 @RequiredArgsConstructor
 public class TokenController {
 
     private final TokenService tokenService;
+    private final NotificationService notificationService;
     @RateLimit(requests = 5, durationSeconds = 60)
     @PostMapping("/checkout")
     public ResponseEntity<TokenDTO.CheckoutResponse> createCheckout(
@@ -45,6 +48,9 @@ public class TokenController {
     @PostMapping("/hire")
     public ResponseEntity<Void> hire(@RequestBody TokenDTO.HireRequest request) {
         tokenService.processHire(request.getEmployerId(), request.getWorkerId());
+
+        notificationService.sendPush(request.getWorkerId(), "You got hired 🎉", "Tap to view your hire details!");
+        
         return ResponseEntity.ok().build();
     }
 }

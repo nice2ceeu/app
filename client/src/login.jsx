@@ -19,7 +19,7 @@ export default function Login() {
 
   const navigate = useNavigate();
   const { profile, loading: profileLoading, setProfile } = useProfile();
-
+  
   // Redirect if already logged in
   useEffect(() => {
     if (profileLoading) return;
@@ -27,8 +27,32 @@ export default function Login() {
     redirectByRole(profile.userRole, navigate);
   }, [profile, profileLoading]);
 
-  const handleHome = () => navigate("/");
+    const handleHome = () => navigate("/");
+    const subscribeUser = async (userId) => {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY
+      });
 
+      // console.log("Subscription:", JSON.stringify(subscription));
+
+      await fetch(`${API_URL}/api/notifications/subscribe`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: userId,
+          subscription: JSON.stringify(subscription)
+        })
+      });
+
+      // console.log('Push subscription saved!');
+    } catch (err) {
+      console.error('Subscribe failed:', err);
+    }
+  };
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -66,6 +90,20 @@ export default function Login() {
         if (profileRes.ok) {
           const data = await profileRes.json();
           setProfile(data);
+           if ('Notification' in window) {
+              // console.log("Permission status:", Notification.permission); // check this
+              // console.log("User id:", data.id); // check this
+
+              if (Notification.permission === 'granted') {
+                await subscribeUser(data.id);
+              } else if (Notification.permission === 'default') {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                  await subscribeUser(data.id);
+                }
+              }
+            }
+
           redirectByRole(data.userRole, navigate);
         } else {
           navigate("/", { replace: true });
